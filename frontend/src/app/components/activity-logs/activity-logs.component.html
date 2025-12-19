@@ -1,0 +1,228 @@
+<div class="dashboard-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="/images/logo/logo.png" alt="InternHub" class="sidebar-logo">
+      <h2>Admin Panel</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" [class.active]="activeSection === 'overview'" (click)="navigateToSection('overview')">
+        <span class="nav-label">Overview</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'internships'" (click)="navigateToSection('internships')">
+        <span class="nav-label">All Internships</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'users'" (click)="navigateToSection('users')">
+        <span class="nav-label">User Management</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'sectors'" (click)="navigateToSection('sectors')">
+        <span class="nav-label">Sectors</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'activity-logs'">
+        <span class="nav-label">Activity Logs</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'reports'" (click)="navigateToSection('reports')">
+        <span class="nav-label">Reports</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'settings'" (click)="navigateToSection('settings')">
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" (click)="logout()">
+        <span class="nav-label">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="content-header">
+      <h1>Activity Logs & Audit Trail</h1>
+      <p class="header-subtitle">Monitor all system activities and user actions</p>
+    </header>
+
+    <div class="content-section">
+      <!-- Filters -->
+      <div class="filters-card">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>User Email</label>
+        <input 
+          type="text" 
+          [(ngModel)]="filterUserEmail" 
+          placeholder="Filter by email..."
+          class="filter-input">
+      </div>
+
+      <div class="filter-group">
+        <label>Action Type</label>
+        <select [(ngModel)]="filterActionType" class="filter-select">
+          <option value="">All Actions</option>
+          <option *ngFor="let type of actionTypes" [value]="type">
+            {{ formatActionType(type) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Entity Type</label>
+        <select [(ngModel)]="filterEntityType" class="filter-select">
+          <option value="">All Entities</option>
+          <option *ngFor="let type of entityTypes" [value]="type">
+            {{ type }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Start Date</label>
+        <input 
+          type="datetime-local" 
+          [(ngModel)]="filterStartDate" 
+          class="filter-input">
+      </div>
+
+      <div class="filter-group">
+        <label>End Date</label>
+        <input 
+          type="datetime-local" 
+          [(ngModel)]="filterEndDate" 
+          class="filter-input">
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button (click)="applyFilters()" class="btn-primary">
+        🔍 Apply Filters
+      </button>
+      <button (click)="clearFilters()" class="btn-secondary">
+        ✖️ Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card-modern">
+      <div class="stat-icon primary-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ totalElements }}</div>
+        <div class="stat-label">Total Logs</div>
+      </div>
+    </div>
+    <div class="stat-card-modern">
+      <div class="stat-icon success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ logs.length }}</div>
+        <div class="stat-label">Current Page</div>
+      </div>
+    </div>
+    <div class="stat-card-modern">
+      <div class="stat-icon info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ currentPage + 1 }} / {{ totalPages }}</div>
+        <div class="stat-label">Page</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading activity logs...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <p>{{ error }}</p>
+    <button (click)="loadLogs()" class="btn-secondary">Retry</button>
+  </div>
+
+  <!-- Logs Timeline -->
+  <div *ngIf="!loading && !error" class="logs-timeline">
+    <div *ngIf="logs.length === 0" class="empty-state">
+      <p>No activity logs found</p>
+    </div>
+
+    <div *ngFor="let log of logs" class="log-entry" [ngClass]="getActionColorClass(log.actionType)">
+      <div class="log-icon">{{ getActionIcon(log.actionType) }}</div>
+      
+      <div class="log-content">
+        <div class="log-header">
+          <span class="log-action">{{ formatActionType(log.actionType) }}</span>
+          <span class="log-time">{{ getRelativeTime(log.createdAt) }}</span>
+        </div>
+        
+        <div class="log-description">{{ log.description }}</div>
+        
+        <div class="log-meta">
+          <span class="meta-item">
+            <strong>User:</strong> {{ log.userEmail }}
+          </span>
+          
+          <span *ngIf="log.entityType" class="meta-item">
+            <strong>Entity:</strong> {{ log.entityType }} #{{ log.entityId }}
+          </span>
+          
+          <span *ngIf="log.ipAddress" class="meta-item">
+            <strong>IP:</strong> {{ log.ipAddress }}
+          </span>
+        </div>
+
+        <!-- Show old/new values if present -->
+        <div *ngIf="log.oldValue || log.newValue" class="log-changes">
+          <div *ngIf="log.oldValue" class="change-item old-value">
+            <strong>Old Value:</strong>
+            <pre>{{ log.oldValue }}</pre>
+          </div>
+          <div *ngIf="log.newValue" class="change-item new-value">
+            <strong>New Value:</strong>
+            <pre>{{ log.newValue }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && !error && totalPages > 1" class="pagination">
+    <button 
+      (click)="previousPage()" 
+      [disabled]="currentPage === 0"
+      class="pagination-btn">
+      ← Previous
+    </button>
+
+    <div class="page-numbers">
+      <button 
+        *ngFor="let page of getPageNumbers()"
+        (click)="goToPage(page)"
+        [class.active]="page === currentPage"
+        class="page-btn">
+        {{ page + 1 }}
+      </button>
+    </div>
+
+    <button 
+      (click)="nextPage()" 
+      [disabled]="currentPage >= totalPages - 1"
+      class="pagination-btn">
+      Next →
+    </button>
+  </div>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Email Verification</h1>
+      <p>Verifying your email address...</p>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <p>Please wait while we verify your email...</p>
+    </div>
+
+    <div *ngIf="!loading && message" class="alert" [ngClass]="success ? 'alert-success' : 'alert-error'">
+      {{ message }}
+    </div>
+
+    <div *ngIf="!loading && success" class="text-center" style="margin-top: 20px;">
+      <p>Redirecting to login...</p>
+      <a routerLink="/login" class="link">Click here if not redirected</a>
+    </div>
+
+    <div *ngIf="!loading && !success" class="text-center" style="margin-top: 20px;">
+      <a routerLink="/login" class="link">Go to Login</a>
+    </div>
+  </div>
+</div>

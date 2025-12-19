@@ -1,0 +1,270 @@
+<div class="statistics-container">
+  <div class="statistics-header">
+    <button (click)="goBack()" class="back-button">← Back</button>
+    <h1>📊 Advanced Statistics Dashboard</h1>
+    <button (click)="loadStatistics()" class="refresh-button">🔄 Refresh</button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading statistics...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <p>{{ error }}</p>
+    <button (click)="loadStatistics()" class="retry-button">Retry</button>
+  </div>
+
+  <!-- Statistics Content -->
+  <div *ngIf="!loading && !error && statistics" class="statistics-content">
+    
+    <!-- Overview Cards -->
+    <div class="overview-section">
+      <h2>📈 Overview</h2>
+      <div class="cards-grid">
+        <div class="stat-card total">
+          <div class="card-icon">📋</div>
+          <div class="card-content">
+            <h3>Total Internships</h3>
+            <p class="big-number">{{ statistics.totalInternships }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card active">
+          <div class="card-icon">🔄</div>
+          <div class="card-content">
+            <h3>Active</h3>
+            <p class="big-number">{{ statistics.activeInternships }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card completed">
+          <div class="card-icon">✅</div>
+          <div class="card-content">
+            <h3>Completed</h3>
+            <p class="big-number">{{ statistics.completedInternships }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card pending">
+          <div class="card-icon">⏳</div>
+          <div class="card-content">
+            <h3>Pending</h3>
+            <p class="big-number">{{ statistics.pendingInternships }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="metrics-section">
+      <h2>📊 Performance Metrics</h2>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h3>Completion Rate</h3>
+          <div class="progress-circle">
+            <div class="progress-value">{{ formatPercentage(statistics.completionRate) }}</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <h3>Approval Rate</h3>
+          <div class="progress-circle">
+            <div class="progress-value">{{ formatPercentage(statistics.approvalRate) }}</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <h3>Avg Duration</h3>
+          <div class="metric-value">
+            {{ formatNumber(statistics.averageInternshipDuration) }} days
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <h3>Rejection Rate</h3>
+          <div class="metric-value">
+            {{ formatPercentage(statistics.rejectionRate) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Statistics -->
+    <div class="users-section">
+      <h2>👥 User Statistics</h2>
+      <div class="users-grid">
+        <div class="user-stat-card">
+          <div class="stat-icon">🎓</div>
+          <div class="stat-info">
+            <p class="stat-label">Total Students</p>
+            <p class="stat-value">{{ statistics.totalStudents }}</p>
+            <p class="stat-detail">{{ statistics.studentsWithInternships }} with internships</p>
+          </div>
+        </div>
+
+        <div class="user-stat-card">
+          <div class="stat-icon">👨‍🏫</div>
+          <div class="stat-info">
+            <p class="stat-label">Total Instructors</p>
+            <p class="stat-value">{{ statistics.totalInstructors }}</p>
+            <p class="stat-detail">{{ statistics.instructorsWithInternships }} assigned</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trends -->
+    <div class="trends-section">
+      <h2>📉 Trends</h2>
+      <div class="trends-grid">
+        <div class="trend-card">
+          <h3>Weekly Trend</h3>
+          <div class="trend-data">
+            <span [class]="getTrendClass(statistics.weeklyTrend.trend)">
+              {{ getTrendIcon(statistics.weeklyTrend.trend) }}
+              {{ formatPercentage(Math.abs(statistics.weeklyTrend.changePercentage)) }}
+            </span>
+          </div>
+          <div class="trend-details">
+            <p>This week: <strong>{{ statistics.weeklyTrend.currentPeriod }}</strong></p>
+            <p>Last week: <strong>{{ statistics.weeklyTrend.previousPeriod }}</strong></p>
+          </div>
+        </div>
+
+        <div class="trend-card">
+          <h3>Monthly Trend</h3>
+          <div class="trend-data">
+            <span [class]="getTrendClass(statistics.monthlyTrend.trend)">
+              {{ getTrendIcon(statistics.monthlyTrend.trend) }}
+              {{ formatPercentage(Math.abs(statistics.monthlyTrend.changePercentage)) }}
+            </span>
+          </div>
+          <div class="trend-details">
+            <p>This month: <strong>{{ statistics.monthlyTrend.currentPeriod }}</strong></p>
+            <p>Last month: <strong>{{ statistics.monthlyTrend.previousPeriod }}</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Performers -->
+    <div class="top-performers-section">
+      <h2>🏆 Top Performers</h2>
+      
+      <div class="performers-grid">
+        <!-- Top Sectors -->
+        <div class="performer-card">
+          <h3>Top Sectors</h3>
+          <div class="performer-list">
+            <div *ngFor="let sector of statistics.topSectors; let i = index" class="performer-item">
+              <span class="rank">{{ i + 1 }}</span>
+              <span class="name">{{ sector.name }}</span>
+              <span class="value">{{ sector.count }} ({{ formatPercentage(sector.percentage) }})</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Companies -->
+        <div class="performer-card">
+          <h3>Top Companies</h3>
+          <div class="performer-list">
+            <div *ngFor="let company of statistics.topCompanies; let i = index" class="performer-item">
+              <span class="rank">{{ i + 1 }}</span>
+              <span class="name">{{ company.name }}</span>
+              <span class="value">{{ company.count }} ({{ formatPercentage(company.percentage) }})</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Instructors -->
+        <div class="performer-card">
+          <h3>Top Instructors</h3>
+          <div class="performer-list">
+            <div *ngFor="let instructor of statistics.topInstructors; let i = index" class="performer-item">
+              <span class="rank">{{ i + 1 }}</span>
+              <span class="name">{{ instructor.name }}</span>
+              <span class="value">{{ instructor.count }} ({{ formatPercentage(instructor.percentage) }})</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribution Charts -->
+    <div class="distribution-section">
+      <div class="distribution-grid">
+        <!-- By Status -->
+        <div class="distribution-card">
+          <h3>Distribution by Status</h3>
+          <div class="distribution-list">
+            <div *ngFor="let item of statistics.internshipsByStatus" class="distribution-item">
+              <div class="label-row">
+                <span class="label">{{ item.label }}</span>
+                <span class="value">{{ item.count }}</span>
+              </div>
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  [style.width.%]="(item.count / statistics.totalInternships) * 100"
+                  [style.background-color]="getStatusColor(item.label)">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- By Sector -->
+        <div class="distribution-card">
+          <h3>Distribution by Sector</h3>
+          <div class="distribution-list">
+            <div *ngFor="let item of statistics.internshipsBySector.slice(0, 8)" class="distribution-item">
+              <div class="label-row">
+                <span class="label">{{ item.label }}</span>
+                <span class="value">{{ item.count }}</span>
+              </div>
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  [style.width.%]="(item.count / statistics.totalInternships) * 100">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time Series -->
+    <div class="timeseries-section">
+      <h2>📅 Trends Over Time (Last 6 Months)</h2>
+      <div class="timeseries-grid">
+        <div class="timeseries-card">
+          <h3>Internships Created</h3>
+          <div class="timeseries-chart">
+            <div *ngFor="let data of statistics.internshipsOverTime" class="chart-bar">
+              <div class="bar" [style.height.%]="(data.count / getMaxCount(statistics.internshipsOverTime)) * 100">
+                <span class="bar-value">{{ data.count }}</span>
+              </div>
+              <span class="bar-label">{{ data.period | date:'MMM' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeseries-card">
+          <h3>Completions</h3>
+          <div class="timeseries-chart">
+            <div *ngFor="let data of statistics.completionsOverTime" class="chart-bar">
+              <div class="bar completed" [style.height.%]="(data.count / getMaxCount(statistics.completionsOverTime)) * 100">
+                <span class="bar-value">{{ data.count }}</span>
+              </div>
+              <span class="bar-label">{{ data.period | date:'MMM' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

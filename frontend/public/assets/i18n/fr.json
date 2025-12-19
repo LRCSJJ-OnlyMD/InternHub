@@ -1,0 +1,194 @@
+{
+  "APP_TITLE": "InternHub",
+  "WELCOME": "Bienvenue sur InternHub",
+  
+  "NAV": {
+    "DASHBOARD": "Tableau de bord",
+    "INTERNSHIPS": "Stages",
+    "MY_INTERNSHIPS": "Mes Stages",
+    "STATISTICS": "Statistiques",
+    "NOTIFICATIONS": "Notifications",
+    "PROFILE": "Profil",
+    "LOGOUT": "Déconnexion",
+    "LOGIN": "Connexion",
+    "REGISTER": "S'inscrire"
+  },
+
+  "AUTH": {
+    "LOGIN_TITLE": "Se Connecter",
+    "REGISTER_TITLE": "Créer un Compte",
+    "EMAIL": "Email",
+    "PASSWORD": "Mot de passe",
+    "CONFIRM_PASSWORD": "Confirmer le mot de passe",
+    "FIRST_NAME": "Prénom",
+    "LAST_NAME": "Nom",
+    "DEPARTMENT": "Département",
+    "ROLE": "Rôle",
+    "LOGIN_BUTTON": "Se Connecter",
+    "REGISTER_BUTTON": "S'inscrire",
+    "FORGOT_PASSWORD": "Mot de passe oublié?",
+    "REMEMBER_ME": "Se souvenir de moi",
+    "NO_ACCOUNT": "Pas de compte?",
+    "HAVE_ACCOUNT": "Vous avez déjà un compte?",
+    "LOGIN_SUCCESS": "Connexion réussie",
+    "LOGIN_ERROR": "Email ou mot de passe invalide",
+    "REGISTER_SUCCESS": "Inscription réussie. Veuillez vérifier votre email.",
+    "LOGOUT_SUCCESS": "Déconnexion réussie"
+  },
+
+  "INTERNSHIP": {
+    "TITLE": "Titre du stage",
+    "COMPANY": "Entreprise",
+    "START_DATE": "Date de début",
+    "END_DATE": "Date de fin",
+    "DESCRIPTION": "Description",
+    "SECTOR": "Secteur",
+    "STATUS": "Statut",
+    "INSTRUCTOR": "Encadrant",
+    "STUDENT": "Étudiant",
+    "REPORT": "Rapport",
+    "ACTIONS": "Actions",
+    "CREATE": "Créer un stage",
+    "EDIT": "Modifier le stage",
+    "DELETE": "Supprimer le stage",
+    "SUBMIT": "Soumettre pour validation",
+    "VALIDATE": "Valider",
+    "REFUSE": "Refuser",
+    "UPLOAD_REPORT": "Télécharger le rapport",
+    "DOWNLOAD_REPORT": "Télécharger le rapport",
+    "VIEW_DETAILS": "Voir les détails",
+    "NO_INTERNSHIPS": "Aucun stage trouvé",
+    "CREATED_SUCCESS": "Stage créé avec succès",
+    "UPDATED_SUCCESS": "Stage mis à jour avec succès",
+    "DELETED_SUCCESS": "Stage supprimé avec succès",
+    "SUBMITTED_SUCCESS": "Stage soumis pour validation",
+    "VALIDATED_SUCCESS": "Stage validé avec succès",
+    "REFUSED_SUCCESS": "Stage refusé",
+    "REFUSAL_COMMENT": "Commentaire de refus",
+    "REFUSAL_COMMENT_REQUIRED": "Veuillez fournir une raison pour le refus"
+  },
+
+  "STATUS": {
+    "DRAFT": "Brouillon",
+    "PENDING_VALIDATION": "En attente de validation",
+    "VALIDATED": "Validé",
+    "REFUSED": "Refusé",
+    "COMPLETED": "Terminé",
+    "CANCELLED": "Annulé"
+  },
+
+  "ROLE": {
+    "ADMIN": "Administrateur",
+    "INSTRUCTOR": "Encadrant",
+    "STUDENT": "Étudiant"
+  },
+
+  "STATISTICS": {
+    "TITLE": "Statistiques",
+    "TOTAL_INTERNSHIPS": "Total des stages",
+    "ACTIVE_INTERNSHIPS": "Stages actifs",
+    "COMPLETED_INTERNSHIPS": "Stages terminés",
+    "PENDING_VALIDATION": "En attente de validation",
+    "BY_SECTOR": "Par secteur",
+    "BY_STATUS": "Par statut",
+    "COMPLETION_RATE": "Taux de complétion",
+    "APPROVAL_RATE": "Taux d'approbation"
+  },
+
+  "NOTIFICATION": {
+    "TITLE": "Notifications",
+    "MARK_ALL_READ": "Tout marquer comme lu",
+    "NO_NOTIFICATIONS": "Aucune notification",
+    "NEW": "Nouveau",
+    "TYPE": {
+      "INTERNSHIP_VALIDATED": "Stage validé",
+      "INTERNSHIP_REFUSED": "Stage refusé",
+      "NEW_COMMENT": "Nouveau commentaire",
+      "DEADLINE_REMINDER": "Rappel de date limite"
+    }
+  },
+
+  "COMMENT": {
+    "TITLE": "Commentaires",
+    "ADD_COMMENT": "Ajouter un commentaire",
+    "EDIT_COMMENT": "Modifier le commentaire",
+    "DELETE_COMMENT": "Supprimer le commentaire",
+    "NO_COMMENTS": "Aucun commentaire pour le moment",
+    "COMMENT_ADDED": "Commentaire ajouté avec succès",
+    "COMMENT_UPDATED": "Commentaire mis à jour avec succès",
+    "COMMENT_DELETED": "Commentaire supprimé avec succès"
+  },
+
+  "DOCUMENT": {
+    "UPLOAD": "Télécharger un document",
+    "DOWNLOAD": "Télécharger",
+    "DELETE": "Supprimer le document",
+    "VERSION": "Version",
+    "UPLOADED_AT": "Téléchargé le",
+    "UPLOADED_BY": "Téléchargé par",
+    "FILE_SIZE": "Taille du fichier",
+    "TYPE": "Type",
+    "TYPES": {
+      "REPORT": "Rapport",
+      "CONTRACT": "Contrat",
+      "CERTIFICATE": "Certificat",
+      "EVALUATION": "Évaluation",
+      "OTHER": "Autre"
+    }
+  },
+
+  "FILTER": {
+    "SEARCH": "Rechercher",
+    "FILTER_BY": "Filtrer par",
+    "SORT_BY": "Trier par",
+    "RESET": "Réinitialiser les filtres",
+    "APPLY": "Appliquer",
+    "ALL": "Tous",
+    "FROM": "De",
+    "TO": "À"
+  },
+
+  "ACTION": {
+    "SAVE": "Enregistrer",
+    "CANCEL": "Annuler",
+    "DELETE": "Supprimer",
+    "EDIT": "Modifier",
+    "VIEW": "Voir",
+    "SUBMIT": "Soumettre",
+    "CLOSE": "Fermer",
+    "CONFIRM": "Confirmer",
+    "BACK": "Retour",
+    "NEXT": "Suivant",
+    "REFRESH": "Actualiser",
+    "EXPORT": "Exporter"
+  },
+
+  "MESSAGE": {
+    "SUCCESS": "Opération terminée avec succès",
+    "ERROR": "Une erreur s'est produite. Veuillez réessayer.",
+    "LOADING": "Chargement...",
+    "NO_DATA": "Aucune donnée disponible",
+    "CONFIRM_DELETE": "Êtes-vous sûr de vouloir supprimer cet élément?",
+    "UNSAVED_CHANGES": "Vous avez des modifications non enregistrées. Voulez-vous quitter?"
+  },
+
+  "VALIDATION": {
+    "REQUIRED": "Ce champ est requis",
+    "EMAIL_INVALID": "Format d'email invalide",
+    "MIN_LENGTH": "La longueur minimale est de {{min}} caractères",
+    "MAX_LENGTH": "La longueur maximale est de {{max}} caractères",
+    "PASSWORD_MISMATCH": "Les mots de passe ne correspondent pas",
+    "DATE_INVALID": "Date invalide",
+    "DATE_RANGE": "La date de fin doit être après la date de début"
+  },
+
+  "SETTINGS": {
+    "TITLE": "Paramètres",
+    "LANGUAGE": "Langue",
+    "THEME": "Thème",
+    "NOTIFICATIONS": "Préférences de notification",
+    "PROFILE": "Paramètres du profil",
+    "PASSWORD": "Changer le mot de passe",
+    "TWO_FACTOR": "Authentification à deux facteurs"
+  }
+}

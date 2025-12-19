@@ -1,0 +1,171 @@
+<div class="bulk-operations-container">
+  <div class="header">
+    <button (click)="goBack()" class="back-button">← Back</button>
+    <h1>⚡ Bulk Operations</h1>
+    <div class="selection-info">
+      <span>{{ selectedInternships.size }} of {{ internships.length }} selected</span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Processing...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <p>{{ error }}</p>
+    <button (click)="loadInternships()" class="retry-button">Retry</button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && !error" class="content">
+    
+    <!-- Operation Panel -->
+    <div class="operation-panel">
+      <h2>Select Operation</h2>
+      
+      <div class="operation-form">
+        <div class="form-group">
+          <label>Operation Type</label>
+          <select [(ngModel)]="selectedOperation" class="form-control">
+            <option value="">-- Select Operation --</option>
+            <option value="UPDATE_STATUS">Update Status</option>
+            <option value="VALIDATE">Validate</option>
+            <option value="REJECT">Reject</option>
+            <option value="DELETE">Delete</option>
+          </select>
+        </div>
+
+        <div *ngIf="selectedOperation === 'UPDATE_STATUS'" class="form-group">
+          <label>New Status</label>
+          <select [(ngModel)]="newStatus" class="form-control">
+            <option value="">-- Select Status --</option>
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </div>
+
+        <div *ngIf="selectedOperation === 'REJECT'" class="form-group">
+          <label>Rejection Reason (Optional)</label>
+          <textarea 
+            [(ngModel)]="rejectionReason" 
+            class="form-control"
+            rows="3"
+            placeholder="Enter reason for rejection..."></textarea>
+        </div>
+
+        <button 
+          (click)="performOperation()" 
+          [disabled]="selectedInternships.size === 0 || !selectedOperation"
+          class="execute-button">
+          🚀 Execute Operation
+        </button>
+      </div>
+    </div>
+
+    <!-- Internships Table -->
+    <div class="internships-table-container">
+      <div class="table-header">
+        <h2>Internships</h2>
+        <button (click)="toggleSelectAll()" class="select-all-button">
+          {{ allSelected ? '☑️ Deselect All' : '☐ Select All' }}
+        </button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="internships-table">
+          <thead>
+            <tr>
+              <th width="50">Select</th>
+              <th>Title</th>
+              <th>Company</th>
+              <th>Student</th>
+              <th>Status</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let internship of internships" 
+                [class.selected]="isSelected(internship.id)"
+                (click)="toggleSelection(internship.id)">
+              <td>
+                <input 
+                  type="checkbox" 
+                  [checked]="isSelected(internship.id)"
+                  (click)="$event.stopPropagation()">
+              </td>
+              <td>{{ internship.title }}</td>
+              <td>{{ internship.companyName }}</td>
+              <td>{{ internship.studentName }}</td>
+              <td>
+                <span [class]="getStatusClass(internship.status)" class="status-badge">
+                  {{ getStatusLabel(internship.status) }}
+                </span>
+              </td>
+              <td>{{ internship.startDate | date:'dd/MM/yyyy' }}</td>
+              <td>{{ internship.endDate | date:'dd/MM/yyyy' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="internships.length === 0" class="empty-state">
+          <p>No internships found</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Modal -->
+  <div *ngIf="showResultModal" class="modal-overlay" (click)="closeResultModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Operation Results</h2>
+        <button (click)="closeResultModal()" class="close-button">✖</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="result-summary">
+          <div class="summary-item success">
+            <span class="icon">✅</span>
+            <span class="label">Success:</span>
+            <span class="value">{{ operationResult?.successCount }}</span>
+          </div>
+          <div class="summary-item failure">
+            <span class="icon">❌</span>
+            <span class="label">Failed:</span>
+            <span class="value">{{ operationResult?.failureCount }}</span>
+          </div>
+          <div class="summary-item total">
+            <span class="icon">📋</span>
+            <span class="label">Total:</span>
+            <span class="value">{{ operationResult?.totalRequested }}</span>
+          </div>
+        </div>
+
+        <p class="result-message">{{ operationResult?.message }}</p>
+
+        <div class="result-details">
+          <h3>Detailed Results</h3>
+          <div class="result-list">
+            <div *ngFor="let result of operationResult?.results" 
+                 class="result-item"
+                 [class.success]="result.success"
+                 [class.failure]="!result.success">
+              <span class="result-icon">{{ result.success ? '✅' : '❌' }}</span>
+              <span class="result-id">ID: {{ result.internshipId }}</span>
+              <span class="result-message">{{ result.message }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeResultModal()" class="button-primary">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

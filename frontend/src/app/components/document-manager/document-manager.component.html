@@ -1,0 +1,215 @@
+<div class="document-manager">
+  <div class="header">
+    <h2>📁 Documents</h2>
+    <span class="document-count">{{ documents.length }} document(s)</span>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <span class="error-icon">⚠️</span>
+    {{ error }}
+    <button (click)="error = null" class="close-btn">×</button>
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">
+    <span class="success-icon">✓</span>
+    {{ successMessage }}
+  </div>
+
+  <!-- Upload Section -->
+  <div *ngIf="!readOnly" class="upload-section">
+    <h3>Upload New Document</h3>
+    <div class="upload-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fileInput">Select File</label>
+          <input 
+            type="file" 
+            id="fileInput"
+            (change)="onFileSelected($event)"
+            [disabled]="uploading"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt">
+        </div>
+        
+        <div class="form-group">
+          <label for="documentType">Document Type</label>
+          <select 
+            id="documentType"
+            [(ngModel)]="selectedDocumentType"
+            [disabled]="uploading">
+            <option *ngFor="let type of documentTypes" [value]="type">
+              {{ getLabel(type) }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description (Optional)</label>
+        <textarea 
+          id="description"
+          [(ngModel)]="uploadDescription"
+          [disabled]="uploading"
+          placeholder="Add a description for this document"
+          rows="2"></textarea>
+      </div>
+
+      <button 
+        class="upload-btn"
+        (click)="uploadDocument()"
+        [disabled]="!selectedFile || uploading">
+        <span *ngIf="!uploading">📤 Upload Document</span>
+        <span *ngIf="uploading">Uploading... {{ uploadProgress }}%</span>
+      </button>
+
+      <div *ngIf="uploading" class="progress-bar">
+        <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documents List -->
+  <div class="documents-list">
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading documents...</p>
+    </div>
+
+    <div *ngIf="!loading && documents.length === 0" class="empty-state">
+      <div class="empty-icon">📂</div>
+      <p>No documents uploaded yet</p>
+    </div>
+
+    <div *ngFor="let document of documents" class="document-card">
+      <div class="document-icon">{{ getDocumentIcon(document) }}</div>
+      
+      <div class="document-info">
+        <h4>{{ document.originalFileName }}</h4>
+        <div class="document-meta">
+          <span class="badge">{{ getLabel(document.documentType) }}</span>
+          <span class="version-badge">v{{ document.version }}</span>
+          <span class="size">{{ formatFileSize(document.fileSize) }}</span>
+          <span class="date">{{ formatDate(document.createdAt) }}</span>
+        </div>
+        <div *ngIf="document.description" class="description">
+          {{ document.description }}
+        </div>
+        <div class="uploader">
+          Uploaded by: {{ document.uploadedByName }}
+        </div>
+      </div>
+
+      <div class="document-actions">
+        <button 
+          class="action-btn download-btn"
+          (click)="downloadDocument(document)"
+          title="Download">
+          ⬇️
+        </button>
+        
+        <button 
+          class="action-btn history-btn"
+          (click)="viewHistory(document)"
+          title="View History">
+          📜
+        </button>
+        
+        <button 
+          *ngIf="!readOnly"
+          class="action-btn version-btn"
+          (click)="versionFileName = document.originalFileName"
+          title="Upload New Version">
+          🔄
+        </button>
+        
+        <button 
+          *ngIf="!readOnly"
+          class="action-btn delete-btn"
+          (click)="deleteDocument(document)"
+          title="Delete">
+          🗑️
+        </button>
+      </div>
+
+      <!-- Upload New Version -->
+      <div *ngIf="versionFileName === document.originalFileName" class="version-upload">
+        <h5>Upload New Version</h5>
+        <input 
+          type="file" 
+          (change)="onVersionFileSelected($event, document.originalFileName)"
+          [disabled]="uploadingVersion">
+        <textarea 
+          [(ngModel)]="versionDescription"
+          placeholder="Version description (optional)"
+          rows="2"></textarea>
+        <div class="version-actions">
+          <button 
+            (click)="uploadVersion(document.originalFileName)"
+            [disabled]="!versionFile || uploadingVersion"
+            class="upload-version-btn">
+            Upload
+          </button>
+          <button 
+            (click)="versionFileName = null; versionFile = null"
+            class="cancel-btn">
+            Cancel
+          </button>
+        </div>
+        <div *ngIf="uploadingVersion" class="progress-bar">
+          <div class="progress-fill" [style.width.%]="versionProgress"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div *ngIf="showHistoryModal" class="modal-overlay" (click)="closeHistoryModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📜 Document History</h3>
+        <button class="close-modal" (click)="closeHistoryModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="loadingHistory" class="loading">
+          <div class="spinner"></div>
+          <p>Loading history...</p>
+        </div>
+
+        <div *ngIf="!loadingHistory && documentHistory">
+          <div class="history-header">
+            <h4>{{ documentHistory.originalFileName }}</h4>
+            <span class="badge">{{ getLabel(documentHistory.documentType) }}</span>
+            <p>Total Versions: {{ documentHistory.totalVersions }}</p>
+          </div>
+
+          <div class="version-timeline">
+            <div 
+              *ngFor="let version of documentHistory.versions" 
+              class="version-item"
+              [class.latest]="version.isLatestVersion">
+              <div class="version-marker">
+                <span class="version-number">v{{ version.version }}</span>
+                <span *ngIf="version.isLatestVersion" class="latest-badge">Latest</span>
+              </div>
+              <div class="version-details">
+                <div class="version-info">
+                  <span class="size">{{ formatFileSize(version.fileSize) }}</span>
+                  <span class="uploader">{{ version.uploadedByName }}</span>
+                  <span class="date">{{ formatDate(version.createdAt) }}</span>
+                </div>
+                <div *ngIf="version.description" class="version-description">
+                  {{ version.description }}
+                </div>
+                <button 
+                  class="download-version-btn"
+                  (click)="downloadVersion(version.id)">
+                  ⬇️ Download
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

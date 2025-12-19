@@ -1,0 +1,223 @@
+<div class="search-container">
+  <div class="search-header">
+    <h2>🔍 Search Internships</h2>
+    <p class="subtitle">Find internships using advanced filters</p>
+  </div>
+
+  <!-- Search Filters -->
+  <div class="search-filters">
+    <form [formGroup]="searchForm" (ngSubmit)="search()">
+      <div class="filters-grid">
+        <!-- Title -->
+        <div class="filter-group">
+          <label>Title</label>
+          <input 
+            type="text" 
+            formControlName="title" 
+            placeholder="Search by title..."
+            class="filter-input">
+        </div>
+
+        <!-- Company Name -->
+        <div class="filter-group">
+          <label>Company Name</label>
+          <input 
+            type="text" 
+            formControlName="companyName" 
+            placeholder="Search by company..."
+            class="filter-input">
+        </div>
+
+        <!-- Sector -->
+        <div class="filter-group">
+          <label>Sector</label>
+          <select formControlName="sectorId" class="filter-select">
+            <option [value]="null">All Sectors</option>
+            <option *ngFor="let sector of sectors" [value]="sector.id">
+              {{ sector.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div class="filter-group">
+          <label>Status</label>
+          <select formControlName="status" class="filter-select">
+            <option [value]="null">All Statuses</option>
+            <option *ngFor="let status of statusOptions" [value]="status">
+              {{ getStatusLabel(status) }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Student Name -->
+        <div class="filter-group">
+          <label>Student Name</label>
+          <input 
+            type="text" 
+            formControlName="studentName" 
+            placeholder="Search by student..."
+            class="filter-input">
+        </div>
+
+        <!-- Instructor Name -->
+        <div class="filter-group">
+          <label>Instructor Name</label>
+          <input 
+            type="text" 
+            formControlName="instructorName" 
+            placeholder="Search by instructor..."
+            class="filter-input">
+        </div>
+
+        <!-- Start Date From -->
+        <div class="filter-group">
+          <label>Start Date From</label>
+          <input 
+            type="date" 
+            formControlName="startDateFrom" 
+            class="filter-input">
+        </div>
+
+        <!-- Start Date To -->
+        <div class="filter-group">
+          <label>Start Date To</label>
+          <input 
+            type="date" 
+            formControlName="startDateTo" 
+            class="filter-input">
+        </div>
+
+        <!-- Sort By -->
+        <div class="filter-group">
+          <label>Sort By</label>
+          <select formControlName="sortBy" class="filter-select">
+            <option value="createdAt">Created Date</option>
+            <option value="startDate">Start Date</option>
+            <option value="endDate">End Date</option>
+            <option value="title">Title</option>
+            <option value="companyName">Company</option>
+          </select>
+        </div>
+
+        <!-- Sort Direction -->
+        <div class="filter-group">
+          <label>Order</label>
+          <select formControlName="sortDirection" class="filter-select">
+            <option value="DESC">Descending</option>
+            <option value="ASC">Ascending</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          <span *ngIf="!loading">🔍 Search</span>
+          <span *ngIf="loading">Searching...</span>
+        </button>
+        <button type="button" (click)="clearFilters()" class="btn-secondary">
+          ✖️ Clear Filters
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="results-summary" *ngIf="!loading && internships.length > 0">
+    <p>Found <strong>{{ totalElements }}</strong> internship(s)</p>
+    <p>Page {{ currentPage + 1 }} of {{ totalPages }}</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Searching internships...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <p>{{ error }}</p>
+    <button (click)="search()" class="btn-secondary">Retry</button>
+  </div>
+
+  <!-- Results Grid -->
+  <div *ngIf="!loading && !error && internships.length > 0" class="results-grid">
+    <div *ngFor="let internship of internships" class="internship-card">
+      <div class="card-header">
+        <h3>{{ internship.title }}</h3>
+        <span [class]="getStatusClass(internship.status)" class="status-badge">
+          {{ getStatusLabel(internship.status) }}
+        </span>
+      </div>
+
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-label">🏢 Company:</span>
+          <span>{{ internship.companyName }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">🎓 Student:</span>
+          <span>{{ internship.studentName }}</span>
+        </div>
+
+        <div class="info-row" *ngIf="internship.instructorName">
+          <span class="info-label">👨‍🏫 Instructor:</span>
+          <span>{{ internship.instructorName }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">📁 Sector:</span>
+          <span>{{ internship.sectorName }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">📅 Period:</span>
+          <span>{{ internship.startDate | date:'dd/MM/yyyy' }} - {{ internship.endDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+
+        <p class="description">{{ internship.description }}</p>
+      </div>
+
+      <div class="card-footer">
+        <button (click)="viewDetails(internship)" class="btn-view">
+          View Details
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && internships.length === 0" class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <h3>No internships found</h3>
+    <p>Try adjusting your search filters</p>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && totalPages > 1" class="pagination">
+    <button 
+      (click)="previousPage()" 
+      [disabled]="currentPage === 0"
+      class="pagination-btn">
+      ← Previous
+    </button>
+
+    <div class="page-numbers">
+      <button 
+        *ngFor="let page of getPageNumbers()"
+        (click)="loadPage(page)"
+        [class.active]="page === currentPage"
+        class="page-btn">
+        {{ page + 1 }}
+      </button>
+    </div>
+
+    <button 
+      (click)="nextPage()" 
+      [disabled]="currentPage >= totalPages - 1"
+      class="pagination-btn">
+      Next →
+    </button>
+  </div>
+</div>

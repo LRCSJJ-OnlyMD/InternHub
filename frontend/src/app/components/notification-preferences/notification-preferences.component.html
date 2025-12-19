@@ -1,0 +1,104 @@
+<div class="notification-preferences-container">
+  <div class="header">
+    <button class="back-button" (click)="goBack()">
+      <span>←</span> Back
+    </button>
+    <h1>Notification Preferences</h1>
+    <p class="subtitle">Customize how you receive notifications</p>
+  </div>
+
+  <div *ngIf="loading && preferences.length === 0" class="loading">
+    <div class="spinner"></div>
+    <p>Loading preferences...</p>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <span class="error-icon">⚠️</span>
+    {{ error }}
+    <button (click)="loadPreferences()" class="retry-button">Retry</button>
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">
+    <span class="success-icon">✓</span>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="!loading || preferences.length > 0" class="preferences-content">
+    <div class="actions-bar">
+      <button class="reset-button" (click)="resetToDefaults()" [disabled]="loading">
+        <span class="icon">↺</span>
+        Reset to Defaults
+      </button>
+    </div>
+
+    <div class="preferences-grid">
+      <div class="grid-header">
+        <div class="notification-type-header">Notification Type</div>
+        <div class="channel-header">Email</div>
+        <div class="channel-header">Push</div>
+        <div class="channel-header">In-App</div>
+      </div>
+
+      <div *ngFor="let preference of preferences" class="preference-row">
+        <div class="notification-type">
+          <span class="notification-icon">{{ getNotificationIcon(preference.notificationType) }}</span>
+          <span class="notification-label">{{ getLabel(preference.notificationType) }}</span>
+        </div>
+        
+        <div class="channel-toggle">
+          <label class="switch">
+            <input 
+              type="checkbox" 
+              [checked]="preference.emailEnabled"
+              (change)="toggleChannel(preference, 'email')"
+              [disabled]="loading">
+            <span class="slider"></span>
+          </label>
+        </div>
+        
+        <div class="channel-toggle">
+          <label class="switch">
+            <input 
+              type="checkbox" 
+              [checked]="preference.pushEnabled"
+              (change)="toggleChannel(preference, 'push')"
+              [disabled]="loading">
+            <span class="slider"></span>
+          </label>
+        </div>
+        
+        <div class="channel-toggle">
+          <label class="switch">
+            <input 
+              type="checkbox" 
+              [checked]="preference.inAppEnabled"
+              (change)="toggleChannel(preference, 'inApp')"
+              [disabled]="loading">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h3>About Notification Channels</h3>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-icon">📧</div>
+          <h4>Email</h4>
+          <p>Receive notifications via email to your registered address</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">📱</div>
+          <h4>Push</h4>
+          <p>Get instant push notifications on your mobile device</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">🔔</div>
+          <h4>In-App</h4>
+          <p>See notifications in the application notification center</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
