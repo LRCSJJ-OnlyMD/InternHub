@@ -18,7 +18,7 @@ class ApiConstants {
   // Admin endpoints
   static const String adminInternships = '/admin/internships';
   static const String adminUsers = '/admin/users';
-  static const String sectors = '/utility/sectors';
+  static const String sectors = '/admin/sectors';
 
   // Comments endpoint
   static const String comments = '/comments';

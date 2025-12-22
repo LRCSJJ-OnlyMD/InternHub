@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../services/auth_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -24,8 +25,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       setState(() => _isLoading = true);
 
       try {
-        // TODO: Implement forgot password API call
-        await Future.delayed(const Duration(seconds: 2));
+        final authService = AuthService();
+        await authService.requestPasswordReset(_emailController.text.trim());
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

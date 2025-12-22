@@ -16,7 +16,31 @@ final adminStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
     final statsByStatus = await service.getStatsByStatus();
     final statsBySector = await service.getStatsBySector();
 
-    return {'byStatus': statsByStatus, 'bySector': statsBySector};
+    // Get all users count
+    final allUsers = await service.getAllUsers();
+
+    // Calculate totals
+    int totalInternships = 0;
+    int pendingInternships = 0;
+    int validatedInternships = 0;
+
+    statsByStatus.forEach((status, count) {
+      totalInternships += count;
+      if (status.toUpperCase().contains('PENDING')) {
+        pendingInternships += count;
+      } else if (status.toUpperCase().contains('VALIDATED')) {
+        validatedInternships += count;
+      }
+    });
+
+    return {
+      'totalUsers': allUsers.length,
+      'totalInternships': totalInternships,
+      'pendingInternships': pendingInternships,
+      'validatedInternships': validatedInternships,
+      'byStatus': statsByStatus,
+      'bySector': statsBySector,
+    };
   } catch (e) {
     throw Exception('Failed to load admin statistics: $e');
   }

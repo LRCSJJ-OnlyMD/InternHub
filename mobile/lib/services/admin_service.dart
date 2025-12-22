@@ -13,7 +13,11 @@ class AdminService {
 
       final Map<String, int> stats = {};
       for (var item in response.data) {
-        stats[item['status']] = item['count'];
+        final label = item['label']?.toString() ?? 'Unknown';
+        final count = (item['count'] is int)
+            ? item['count']
+            : (item['count'] as num?)?.toInt() ?? 0;
+        stats[label] = count;
       }
       return stats;
     } on DioException catch (e) {
@@ -27,7 +31,11 @@ class AdminService {
 
       final Map<String, int> stats = {};
       for (var item in response.data) {
-        stats[item['sectorName']] = item['count'];
+        final label = item['label']?.toString() ?? 'Unknown';
+        final count = (item['count'] is int)
+            ? item['count']
+            : (item['count'] as num?)?.toInt() ?? 0;
+        stats[label] = count;
       }
       return stats;
     } on DioException catch (e) {
@@ -71,9 +79,10 @@ class AdminService {
   // ========== USER MANAGEMENT ==========
   Future<List<User>> getAllUsers() async {
     try {
-      final response = await _apiService.get('/admin/users');
-      final List<dynamic> data = response.data;
-      return data.map((json) => User.fromJson(json)).toList();
+      // Backend doesn't have /admin/users endpoint, fetch both instructors and students
+      final instructors = await getAllInstructors();
+      final students = await getAllStudents();
+      return [...instructors, ...students];
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -109,7 +118,21 @@ class AdminService {
 
   Future<User> createUser(Map<String, dynamic> userData) async {
     try {
-      final response = await _apiService.post('/admin/users', data: userData);
+      // Backend has separate endpoints for creating instructors
+      // /api/admin/users/instructors for instructors
+      // Currently no endpoint for creating students/admins via API
+      final role = userData['role']?.toString().toUpperCase();
+      String endpoint;
+
+      if (role == 'INSTRUCTOR') {
+        endpoint = '/admin/users/instructors';
+      } else {
+        // For students and admins, we'll still try the general endpoint
+        // Backend might need to add this endpoint
+        endpoint = '/admin/users';
+      }
+
+      final response = await _apiService.post(endpoint, data: userData);
       return User.fromJson(response.data);
     } on DioException catch (e) {
       throw _handleError(e);

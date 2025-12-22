@@ -34,8 +34,14 @@ class _InternshipDetailScreenState
       if (result != null && result.files.single.path != null) {
         setState(() => _isUploading = true);
 
-        // TODO: Implement upload report API call
-        await Future.delayed(const Duration(seconds: 2));
+        final file = result.files.single;
+        final internshipService = ref.read(internshipServiceProvider);
+
+        await internshipService.uploadReport(
+          widget.internship.id!,
+          file.path!,
+          file.name,
+        );
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

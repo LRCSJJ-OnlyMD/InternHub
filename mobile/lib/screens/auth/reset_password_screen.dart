@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../services/auth_service.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String? token;
@@ -40,8 +41,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       setState(() => _isLoading = true);
 
       try {
-        // TODO: Implement reset password API call
-        await Future.delayed(const Duration(seconds: 2));
+        final authService = AuthService();
+        await authService.confirmPasswordReset(
+          _tokenController.text.trim(),
+          _passwordController.text,
+        );
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -96,6 +96,28 @@ class AuthService {
     }
   }
 
+  Future<void> requestPasswordReset(String email) async {
+    try {
+      await _apiService.post(
+        ApiConstants.requestPasswordReset,
+        data: {'email': email},
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<void> confirmPasswordReset(String token, String newPassword) async {
+    try {
+      await _apiService.post(
+        ApiConstants.confirmPasswordReset,
+        data: {'token': token, 'newPassword': newPassword},
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   String _handleError(DioException error) {
     if (error.response != null) {
       final data = error.response!.data;

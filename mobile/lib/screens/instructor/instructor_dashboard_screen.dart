@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/internship.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/internship_provider.dart';
+import '../../providers/instructor_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/glowing_card.dart';
 import '../../widgets/stat_card.dart';
@@ -15,7 +15,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
-    final internshipsState = ref.watch(internshipsProvider);
+    final internshipsState = ref.watch(instructorInternshipsProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.darkBackground,
@@ -64,10 +64,11 @@ class InstructorDashboardScreen extends ConsumerWidget {
                                 SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '👨‍🏫 Instructor Panel',
+                                        'Instructor Panel',
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.9),
                                           fontSize: 14,
@@ -104,6 +105,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
                           context.push('/settings');
                         } else if (value == 'logout') {
                           ref.read(authStateProvider.notifier).logout();
+                          context.go('/login');
                         }
                       },
                       itemBuilder: (context) => [
@@ -134,7 +136,10 @@ class InstructorDashboardScreen extends ConsumerWidget {
                             children: [
                               Icon(Icons.logout_rounded, color: Colors.red),
                               SizedBox(width: 12),
-                              Text('Logout', style: TextStyle(color: Colors.red)),
+                              Text(
+                                'Logout',
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ],
                           ),
                         ),
@@ -146,8 +151,8 @@ class InstructorDashboardScreen extends ConsumerWidget {
                 // Content
                 SliverToBoxAdapter(
                   child: RefreshIndicator(
-                    onRefresh: () =>
-                        ref.read(internshipsProvider.notifier).loadInternships(),
+                    onRefresh: () async =>
+                        ref.refresh(instructorInternshipsProvider.future),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
@@ -155,7 +160,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
                         children: [
                           // Statistics
                           Text(
-                            '📊 Supervision Overview',
+                            'Supervision Overview',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -164,19 +169,82 @@ class InstructorDashboardScreen extends ConsumerWidget {
                           ),
                           SizedBox(height: 16),
                           internshipsState.when(
-                            data: (internships) => _buildStatistics(internships),
+                            data: (internships) =>
+                                _buildStatistics(internships),
                             loading: () => Center(
                               child: CircularProgressIndicator(
                                 color: AppTheme.accentCyan,
                               ),
                             ),
-                            error: (error, _) => _buildErrorCard(error.toString()),
+                            error: (error, _) =>
+                                _buildErrorCard(error.toString()),
+                          ),
+                          SizedBox(height: 24),
+
+                          // Available Internships Button
+                          GlowingCard(
+                            glowColor: AppTheme.accentCyan,
+                            child: InkWell(
+                              onTap: () =>
+                                  context.push('/instructor/available'),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.accentCyan.withOpacity(
+                                          0.2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        Icons.workspace_premium,
+                                        color: AppTheme.accentCyan,
+                                        size: 28,
+                                      ),
+                                    ),
+                                    SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Claim Available Internships',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.textPrimary,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            'View unassigned internships in your sectors',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: AppTheme.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: AppTheme.accentCyan,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                           SizedBox(height: 24),
 
                           // Assigned Internships
                           Text(
-                            '📚 Assigned Internships',
+                            'Assigned Internships',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -185,13 +253,15 @@ class InstructorDashboardScreen extends ConsumerWidget {
                           ),
                           SizedBox(height: 16),
                           internshipsState.when(
-                            data: (internships) => _buildInternshipsList(internships, context),
+                            data: (internships) =>
+                                _buildInternshipsList(internships, context),
                             loading: () => Center(
                               child: CircularProgressIndicator(
                                 color: AppTheme.accentCyan,
                               ),
                             ),
-                            error: (error, _) => _buildErrorCard(error.toString()),
+                            error: (error, _) =>
+                                _buildErrorCard(error.toString()),
                           ),
                         ],
                       ),
@@ -263,7 +333,10 @@ class InstructorDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInternshipsList(List<Internship> internships, BuildContext context) {
+  Widget _buildInternshipsList(
+    List<Internship> internships,
+    BuildContext context,
+  ) {
     if (internships.isEmpty) {
       return GlowingCard(
         glowColor: AppTheme.accentCyan,
@@ -287,9 +360,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
             Text(
               'You will see assigned internships here',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-              ),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ],
         ),
@@ -311,7 +382,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
   Widget _buildInternshipCard(Internship internship, BuildContext context) {
     Color statusColor;
     IconData statusIcon;
-    
+
     switch (internship.status) {
       case InternshipStatus.VALIDATED:
         statusColor = AppTheme.successGreen;
@@ -333,7 +404,10 @@ class InstructorDashboardScreen extends ConsumerWidget {
 
     return GlowingCard(
       glowColor: statusColor,
-      onTap: () => context.push('/instructor/internship/${internship.id}/detail', extra: internship),
+      onTap: () => context.push(
+        '/instructor/internship/${internship.id}/detail',
+        extra: internship,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -345,11 +419,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
                   color: statusColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  statusIcon,
-                  color: statusColor,
-                  size: 24,
-                ),
+                child: Icon(statusIcon, color: statusColor, size: 24),
               ),
               SizedBox(width: 12),
               Expanded(
@@ -412,10 +482,7 @@ class InstructorDashboardScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

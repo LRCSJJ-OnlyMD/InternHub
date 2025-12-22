@@ -9,7 +9,7 @@ class CommentService {
   Future<List<Comment>> getCommentsByInternshipId(int internshipId) async {
     try {
       final response = await _apiService.get(
-        '${ApiConstants.comments}/internship/$internshipId',
+        '/internships/$internshipId/comments',
       );
       final List<dynamic> data = response.data;
       return data.map((json) => Comment.fromJson(json)).toList();
@@ -21,7 +21,7 @@ class CommentService {
   Future<Comment> createComment(CreateCommentRequest request) async {
     try {
       final response = await _apiService.post(
-        ApiConstants.comments,
+        '/internships/${request.internshipId}/comments',
         data: request.toJson(),
       );
       return Comment.fromJson(response.data);
@@ -30,10 +30,14 @@ class CommentService {
     }
   }
 
-  Future<Comment> updateComment(int id, UpdateCommentRequest request) async {
+  Future<Comment> updateComment(
+    int internshipId,
+    int id,
+    UpdateCommentRequest request,
+  ) async {
     try {
       final response = await _apiService.put(
-        '${ApiConstants.comments}/$id',
+        '/internships/$internshipId/comments/$id',
         data: request.toJson(),
       );
       return Comment.fromJson(response.data);
@@ -42,9 +46,9 @@ class CommentService {
     }
   }
 
-  Future<void> deleteComment(int id) async {
+  Future<void> deleteComment(int internshipId, int id) async {
     try {
-      await _apiService.delete('${ApiConstants.comments}/$id');
+      await _apiService.delete('/internships/$internshipId/comments/$id');
     } on DioException catch (e) {
       throw _handleError(e);
     }

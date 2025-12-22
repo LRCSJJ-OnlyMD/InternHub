@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/internship.dart';
 import '../../providers/internship_provider.dart';
+import '../../providers/instructor_provider.dart';
 import '../../utils/app_theme.dart';
 import '../shared/comments_section.dart';
 
@@ -65,8 +66,8 @@ class _InstructorInternshipDetailScreenState
       setState(() => _isValidating = true);
 
       try {
-        // TODO: Implement validate API call with optional comment
-        await Future.delayed(const Duration(seconds: 2));
+        final service = ref.read(instructorServiceProvider);
+        await service.validateInternship(widget.internship.id);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -75,7 +76,9 @@ class _InstructorInternshipDetailScreenState
               backgroundColor: Colors.green,
             ),
           );
-          ref.read(internshipsProvider.notifier).loadInternships();
+          ref.invalidate(instructorInternshipsProvider);
+          ref.invalidate(instructorPendingProvider);
+          ref.invalidate(instructorValidatedProvider);
           context.pop(true);
         }
       } catch (e) {
@@ -153,8 +156,11 @@ class _InstructorInternshipDetailScreenState
       setState(() => _isRefusing = true);
 
       try {
-        // TODO: Implement refuse API call with reason
-        await Future.delayed(const Duration(seconds: 2));
+        final service = ref.read(instructorServiceProvider);
+        await service.refuseInternship(
+          widget.internship.id,
+          reasonController.text.trim(),
+        );
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -163,7 +169,9 @@ class _InstructorInternshipDetailScreenState
               backgroundColor: Colors.orange,
             ),
           );
-          ref.read(internshipsProvider.notifier).loadInternships();
+          ref.invalidate(instructorInternshipsProvider);
+          ref.invalidate(instructorPendingProvider);
+          ref.invalidate(instructorValidatedProvider);
           context.pop(true);
         }
       } catch (e) {

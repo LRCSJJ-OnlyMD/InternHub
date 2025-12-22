@@ -29,24 +29,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: Interval(0.0, 0.6, curve: Curves.easeOut),
       ),
     );
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Interval(0.3, 1.0, curve: Curves.easeOut),
-      ),
-    );
-    
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Interval(0.3, 1.0, curve: Curves.easeOut),
+          ),
+        );
+
     _animationController.forward();
   }
 
@@ -138,27 +136,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         Hero(
                           tag: 'app_logo',
                           child: Container(
+                            width: 120,
+                            height: 120,
                             padding: EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: AppTheme.primaryGradient,
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primaryPurple.withOpacity(0.5),
+                                  color: AppTheme.primaryBlue.withOpacity(0.3),
                                   blurRadius: 30,
-                                  spreadRadius: 5,
+                                  offset: Offset(0, 10),
+                                ),
+                                BoxShadow(
+                                  color: AppTheme.secondaryOrange.withOpacity(
+                                    0.2,
+                                  ),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 5),
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              Icons.rocket_launch_rounded,
-                              size: 60,
-                              color: Colors.white,
+                            child: Image.asset(
+                              'assets/logo.png',
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
                         const SizedBox(height: 32),
-                        
+
                         // App Title with Gradient
                         ShaderMask(
                           shaderCallback: (bounds) =>
@@ -176,7 +182,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '🚀 Manage Your Internship Journey',
+                          'Manage Your Internship Journey',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
@@ -185,7 +191,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           ),
                         ),
                         const SizedBox(height: 48),
-                        
+
                         // Email Field
                         Container(
                           decoration: BoxDecoration(
@@ -204,8 +210,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             style: TextStyle(color: AppTheme.textPrimary),
                             decoration: InputDecoration(
                               labelText: 'Email Address',
-                              labelStyle: TextStyle(color: AppTheme.textSecondary),
-                              prefixIcon: Icon(Icons.email_rounded, color: AppTheme.primaryPurple),
+                              labelStyle: TextStyle(
+                                color: AppTheme.textSecondary,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.email_rounded,
+                                color: AppTheme.primaryPurple,
+                              ),
                               filled: true,
                               fillColor: AppTheme.darkCardElevated,
                               border: OutlineInputBorder(
@@ -215,7 +226,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide(
-                                  color: AppTheme.textSecondary.withOpacity(0.2),
+                                  color: AppTheme.textSecondary.withOpacity(
+                                    0.2,
+                                  ),
                                   width: 1,
                                 ),
                               ),
@@ -239,7 +252,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           ),
                         ),
                         const SizedBox(height: 20),
-                        
+
                         // Password Field
                         Container(
                           decoration: BoxDecoration(
@@ -258,8 +271,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             style: TextStyle(color: AppTheme.textPrimary),
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle: TextStyle(color: AppTheme.textSecondary),
-                              prefixIcon: Icon(Icons.lock_rounded, color: AppTheme.secondaryPink),
+                              labelStyle: TextStyle(
+                                color: AppTheme.textSecondary,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.lock_rounded,
+                                color: AppTheme.secondaryPink,
+                              ),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword
@@ -282,7 +300,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide(
-                                  color: AppTheme.textSecondary.withOpacity(0.2),
+                                  color: AppTheme.textSecondary.withOpacity(
+                                    0.2,
+                                  ),
                                   width: 1,
                                 ),
                               ),
@@ -303,7 +323,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           ),
                         ),
                         const SizedBox(height: 32),
-                        
+
                         // Login Button
                         AnimatedGradientButton(
                           text: 'LOGIN',
@@ -314,7 +334,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           height: 60,
                         ),
                         const SizedBox(height: 20),
-                        
+
                         // Register Link
                         TextButton(
                           onPressed: () => context.push('/register'),
@@ -346,4 +366,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     );
   }
 }
-        

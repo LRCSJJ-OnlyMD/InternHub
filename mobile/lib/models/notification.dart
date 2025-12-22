@@ -49,19 +49,19 @@ class AppNotification {
   String getIcon() {
     switch (type.toUpperCase()) {
       case 'INTERNSHIP_VALIDATED':
-        return '✓';
+        return 'V';
       case 'INTERNSHIP_REFUSED':
-        return '✗';
+        return 'X';
       case 'NEW_COMMENT':
-        return '💬';
+        return 'C';
       case 'DOCUMENT_UPLOADED':
-        return '📄';
+        return 'D';
       case 'DEADLINE_REMINDER':
-        return '⏰';
+        return 'R';
       case 'ASSIGNMENT':
-        return '📋';
+        return 'A';
       default:
-        return '🔔';
+        return 'N';
     }
   }
 

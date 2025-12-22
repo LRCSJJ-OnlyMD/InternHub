@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../models/internship.dart';
 import '../../providers/sector_provider.dart';
 import '../../providers/internship_provider.dart';
@@ -26,6 +27,7 @@ class _EditInternshipScreenState extends ConsumerState<EditInternshipScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isLoading = false;
+  PlatformFile? _selectedReport;
 
   @override
   void initState() {
@@ -75,6 +77,38 @@ class _EditInternshipScreenState extends ConsumerState<EditInternshipScreen> {
     }
   }
 
+  Future<void> _selectReport() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          _selectedReport = result.files.first;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Report selected: ${_selectedReport!.name}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting file: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _handleUpdate(bool asDraft) async {
     if (_formKey.currentState!.validate()) {
       if (_selectedSector == null) {
@@ -104,15 +138,43 @@ class _EditInternshipScreenState extends ConsumerState<EditInternshipScreen> {
           'id': widget.internship.id,
           'title': _titleController.text.trim(),
           'description': _descriptionController.text.trim(),
-          'company': _companyController.text.trim(),
-          'location': _locationController.text.trim(),
+          'companyName': _companyController.text.trim(),
+          'companyAddress': _locationController.text.trim(),
           'sectorId': _selectedSector!.id,
-          'startDate': _startDate!.toIso8601String(),
-          'endDate': _endDate!.toIso8601String(),
-          'status': asDraft ? 'DRAFT' : 'PENDING_VALIDATION',
+          'startDate': _startDate!.toIso8601String().split('T')[0],
+          'endDate': _endDate!.toIso8601String().split('T')[0],
         };
 
         await ref.read(internshipsProvider.notifier).updateInternship(request);
+
+        // Upload report if selected
+        if (_selectedReport != null) {
+          try {
+            await ref.read(internshipServiceProvider).uploadReport(
+              widget.internship.id,
+              _selectedReport!.path!,
+              _selectedReport!.name,
+            );
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Report uploaded successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } catch (uploadError) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Internship updated but report upload failed: $uploadError'),
+                  backgroundColor: Colors.orange,
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+            }
+          }
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -266,6 +328,23 @@ class _EditInternshipScreenState extends ConsumerState<EditInternshipScreen> {
                         }
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 16),
+                    OutlinedButton.icon(
+                      onPressed: _selectReport,
+                      icon: Icon(
+                        _selectedReport != null ? Icons.check_circle : Icons.upload_file,
+                        color: _selectedReport != null ? Colors.green : null,
+                      ),
+                      label: Text(
+                        _selectedReport != null
+                            ? 'Report: ${_selectedReport!.name}'
+                            : 'Upload Report (Optional)',
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                        alignment: Alignment.centerLeft,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(

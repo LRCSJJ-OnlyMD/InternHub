@@ -36,7 +36,10 @@ class AdminDashboardScreen extends ConsumerWidget {
                     background: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [AppTheme.errorRed, AppTheme.secondaryPink],
+                          colors: [
+                            AppTheme.primaryBlue,
+                            AppTheme.secondaryOrange,
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -64,10 +67,11 @@ class AdminDashboardScreen extends ConsumerWidget {
                                 SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '⚡ Admin Control Panel',
+                                        'Admin Control Panel',
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.9),
                                           fontSize: 14,
@@ -104,6 +108,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                           context.push('/settings');
                         } else if (value == 'logout') {
                           ref.read(authStateProvider.notifier).logout();
+                          context.go('/login');
                         }
                       },
                       itemBuilder: (context) => [
@@ -134,7 +139,10 @@ class AdminDashboardScreen extends ConsumerWidget {
                             children: [
                               Icon(Icons.logout_rounded, color: Colors.red),
                               SizedBox(width: 12),
-                              Text('Logout', style: TextStyle(color: Colors.red)),
+                              Text(
+                                'Logout',
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ],
                           ),
                         ),
@@ -156,7 +164,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                         children: [
                           // Quick Actions
                           Text(
-                            '⚡ Quick Actions',
+                            'Quick Actions',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -176,28 +184,28 @@ class AdminDashboardScreen extends ConsumerWidget {
                                 context,
                                 'Users',
                                 Icons.people_rounded,
-                                AppTheme.primaryPurple,
+                                AppTheme.primaryBlue,
                                 () => context.push('/admin/users'),
                               ),
                               _buildActionCard(
                                 context,
                                 'Internships',
                                 Icons.work_rounded,
-                                AppTheme.accentCyan,
+                                AppTheme.secondaryOrange,
                                 () => context.push('/admin/internships'),
                               ),
                               _buildActionCard(
                                 context,
                                 'Sectors',
                                 Icons.category_rounded,
-                                AppTheme.accentOrange,
+                                AppTheme.successGreen,
                                 () => context.push('/admin/sectors'),
                               ),
                               _buildActionCard(
                                 context,
                                 'Search',
                                 Icons.search_rounded,
-                                AppTheme.secondaryPink,
+                                AppTheme.primaryBlueLight,
                                 () => context.push('/admin/advanced-search'),
                               ),
                             ],
@@ -206,7 +214,7 @@ class AdminDashboardScreen extends ConsumerWidget {
 
                           // Statistics
                           Text(
-                            '📊 System Overview',
+                            'System Overview',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -218,10 +226,11 @@ class AdminDashboardScreen extends ConsumerWidget {
                             data: (stats) => _buildStatistics(stats),
                             loading: () => Center(
                               child: CircularProgressIndicator(
-                                color: AppTheme.secondaryPink,
+                                color: AppTheme.primaryBlueLight,
                               ),
                             ),
-                            error: (error, _) => _buildErrorCard(error.toString()),
+                            error: (error, _) =>
+                                _buildErrorCard(error.toString()),
                           ),
                         ],
                       ),
@@ -232,7 +241,7 @@ class AdminDashboardScreen extends ConsumerWidget {
             );
           },
           loading: () => Center(
-            child: CircularProgressIndicator(color: AppTheme.secondaryPink),
+            child: CircularProgressIndicator(color: AppTheme.primaryBlueLight),
           ),
           error: (error, _) => Center(
             child: Text('Error: $error', style: TextStyle(color: Colors.red)),
@@ -254,20 +263,22 @@ class AdminDashboardScreen extends ConsumerWidget {
       onTap: onTap,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 28),
+            child: Icon(icon, color: color, size: 24),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: 6),
           Text(
             title,
+            textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               color: AppTheme.textPrimary,
             ),

@@ -61,10 +61,11 @@ class StudentDashboardScreen extends ConsumerWidget {
                                 SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Welcome Back! 👋',
+                                        'Welcome Back',
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.9),
                                           fontSize: 14,
@@ -101,6 +102,7 @@ class StudentDashboardScreen extends ConsumerWidget {
                           context.push('/settings');
                         } else if (value == 'logout') {
                           ref.read(authStateProvider.notifier).logout();
+                          context.go('/login');
                         }
                       },
                       itemBuilder: (context) => [
@@ -131,7 +133,10 @@ class StudentDashboardScreen extends ConsumerWidget {
                             children: [
                               Icon(Icons.logout_rounded, color: Colors.red),
                               SizedBox(width: 12),
-                              Text('Logout', style: TextStyle(color: Colors.red)),
+                              Text(
+                                'Logout',
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ],
                           ),
                         ),
@@ -149,7 +154,7 @@ class StudentDashboardScreen extends ConsumerWidget {
                       children: [
                         // Quick Actions
                         Text(
-                          '🚀 Quick Actions',
+                          'Quick Actions',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -168,7 +173,7 @@ class StudentDashboardScreen extends ConsumerWidget {
 
                         // Statistics
                         Text(
-                          '📊 Your Progress',
+                          'Your Progress',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -180,10 +185,11 @@ class StudentDashboardScreen extends ConsumerWidget {
                           data: (internships) => _buildStatistics(internships),
                           loading: () => Center(
                             child: CircularProgressIndicator(
-                              color: AppTheme.primaryPurple,
+                              color: AppTheme.primaryBlueLight,
                             ),
                           ),
-                          error: (error, _) => _buildErrorCard(error.toString()),
+                          error: (error, _) =>
+                              _buildErrorCard(error.toString()),
                         ),
                         SizedBox(height: 24),
 
@@ -191,7 +197,7 @@ class StudentDashboardScreen extends ConsumerWidget {
                         Row(
                           children: [
                             Text(
-                              '📝 My Internships',
+                              'My Internships',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -202,13 +208,15 @@ class StudentDashboardScreen extends ConsumerWidget {
                         ),
                         SizedBox(height: 16),
                         internshipsState.when(
-                          data: (internships) => _buildInternshipsList(internships, context),
+                          data: (internships) =>
+                              _buildInternshipsList(internships, context),
                           loading: () => Center(
                             child: CircularProgressIndicator(
-                              color: AppTheme.primaryPurple,
+                              color: AppTheme.primaryBlueLight,
                             ),
                           ),
-                          error: (error, _) => _buildErrorCard(error.toString()),
+                          error: (error, _) =>
+                              _buildErrorCard(error.toString()),
                         ),
                       ],
                     ),
@@ -218,7 +226,7 @@ class StudentDashboardScreen extends ConsumerWidget {
             );
           },
           loading: () => Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryPurple),
+            child: CircularProgressIndicator(color: AppTheme.primaryBlueLight),
           ),
           error: (error, _) => Center(
             child: Text('Error: $error', style: TextStyle(color: Colors.red)),
@@ -279,17 +287,16 @@ class StudentDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInternshipsList(List<Internship> internships, BuildContext context) {
+  Widget _buildInternshipsList(
+    List<Internship> internships,
+    BuildContext context,
+  ) {
     if (internships.isEmpty) {
       return GlowingCard(
-        glowColor: AppTheme.primaryPurple,
+        glowColor: AppTheme.primaryBlueLight,
         child: Column(
           children: [
-            Icon(
-              Icons.inbox_rounded,
-              size: 64,
-              color: AppTheme.textSecondary,
-            ),
+            Icon(Icons.inbox_rounded, size: 64, color: AppTheme.textSecondary),
             SizedBox(height: 16),
             Text(
               'No internships yet',
@@ -303,9 +310,7 @@ class StudentDashboardScreen extends ConsumerWidget {
             Text(
               'Create your first internship to get started!',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-              ),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ],
         ),
@@ -327,7 +332,7 @@ class StudentDashboardScreen extends ConsumerWidget {
   Widget _buildInternshipCard(Internship internship, BuildContext context) {
     Color statusColor;
     IconData statusIcon;
-    
+
     switch (internship.status) {
       case InternshipStatus.VALIDATED:
         statusColor = AppTheme.successGreen;
@@ -349,7 +354,10 @@ class StudentDashboardScreen extends ConsumerWidget {
 
     return GlowingCard(
       glowColor: statusColor,
-      onTap: () => context.push('/internship/${internship.id}'),
+      onTap: () => context.push(
+        '/internship/${internship.id}/detail',
+        extra: internship,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -361,11 +369,7 @@ class StudentDashboardScreen extends ConsumerWidget {
                   color: statusColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  statusIcon,
-                  color: statusColor,
-                  size: 24,
-                ),
+                child: Icon(statusIcon, color: statusColor, size: 24),
               ),
               SizedBox(width: 12),
               Expanded(
@@ -433,10 +437,7 @@ class StudentDashboardScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

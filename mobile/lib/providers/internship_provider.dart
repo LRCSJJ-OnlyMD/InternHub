@@ -38,13 +38,14 @@ class InternshipNotifier extends StateNotifier<AsyncValue<List<Internship>>> {
     }
   }
 
-  Future<void> createInternship(Map<String, dynamic> request) async {
+  Future<Internship?> createInternship(Map<String, dynamic> request) async {
     try {
       final newInternship = await _service.create(request);
       state.whenData((internships) {
         state = AsyncValue.data([...internships, newInternship]);
       });
       await loadInternships(); // Reload to get fresh data
+      return newInternship;
     } catch (e) {
       rethrow;
     }

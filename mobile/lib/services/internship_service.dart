@@ -100,15 +100,14 @@ class InternshipService {
     return getById(id);
   }
 
-  // File upload/download methods (placeholder implementations)
-  Future<void> uploadReport(int id, dynamic file) async {
+  // File upload/download methods
+  Future<void> uploadReport(int id, String filePath, String fileName) async {
     try {
-      // TODO: Implement file upload with multipart/form-data
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(file.path, filename: file.name),
+        'file': await MultipartFile.fromFile(filePath, filename: fileName),
       });
       await _apiService.post(
-        '${ApiConstants.studentInternships}/$id/documents',
+        '${ApiConstants.studentInternships}/$id/report',
         data: formData,
       );
     } on DioException catch (e) {

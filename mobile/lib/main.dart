@@ -13,6 +13,7 @@ import 'screens/student/internship_detail_screen.dart';
 import 'screens/instructor/instructor_dashboard_screen.dart';
 import 'screens/instructor/instructor_internships_screen.dart';
 import 'screens/instructor/instructor_internship_detail_screen.dart';
+import 'screens/instructor/available_internships_screen.dart';
 import 'screens/admin/admin_dashboard_screen.dart';
 import 'screens/admin/users_management_screen.dart';
 import 'screens/admin/user_form_screen.dart';
@@ -47,6 +48,8 @@ class MyApp extends ConsumerWidget {
       redirect: (context, state) {
         final authState = ref.read(authStateProvider);
         final isLoggedIn = authState.value != null;
+        final user = authState.value;
+
         final publicPaths = [
           '/login',
           '/register',
@@ -56,23 +59,45 @@ class MyApp extends ConsumerWidget {
         ];
         final isPublicPath = publicPaths.contains(state.matchedLocation);
 
+        // Not logged in - redirect to login
         if (!isLoggedIn && !isPublicPath) {
           return '/login';
         }
-        if (isLoggedIn && state.matchedLocation == '/login') {
-          final user = authState.value;
-          if (user != null) {
-            // Redirect based on role
-            if (user.role == Role.ADMIN) {
+
+        // Logged in - role-based redirects
+        if (isLoggedIn && user != null) {
+          final path = state.matchedLocation;
+
+          // From login page
+          if (path == '/login') {
+            if (user.role == Role.ADMIN) return '/admin/dashboard';
+            if (user.role == Role.INSTRUCTOR) return '/instructor/dashboard';
+            return '/dashboard';
+          }
+
+          // ADMIN protections
+          if (user.role == Role.ADMIN) {
+            // Redirect admin away from student/instructor dashboards
+            if (path == '/dashboard' || path == '/instructor/dashboard') {
               return '/admin/dashboard';
-            } else if (user.role == Role.INSTRUCTOR) {
-              return '/instructor/dashboard';
-            } else {
+            }
+          }
+
+          // STUDENT protections
+          if (user.role == Role.STUDENT) {
+            if (path.startsWith('/admin/') || path.startsWith('/instructor/')) {
               return '/dashboard';
             }
           }
-          return '/dashboard';
+
+          // INSTRUCTOR protections
+          if (user.role == Role.INSTRUCTOR) {
+            if (path.startsWith('/admin/')) {
+              return '/instructor/dashboard';
+            }
+          }
         }
+
         return null;
       },
       routes: [
@@ -104,6 +129,16 @@ class MyApp extends ConsumerWidget {
         ),
         GoRoute(
           path: '/dashboard',
+          redirect: (context, state) {
+            // Extra protection: prevent non-students from accessing
+            final authState = ref.read(authStateProvider);
+            final user = authState.value;
+            if (user != null && user.role != Role.STUDENT) {
+              if (user.role == Role.ADMIN) return '/admin/dashboard';
+              if (user.role == Role.INSTRUCTOR) return '/instructor/dashboard';
+            }
+            return null;
+          },
           builder: (context, state) => const StudentDashboardScreen(),
         ),
         GoRoute(
@@ -131,6 +166,10 @@ class MyApp extends ConsumerWidget {
         GoRoute(
           path: '/instructor/internships',
           builder: (context, state) => const InstructorInternshipsScreen(),
+        ),
+        GoRoute(
+          path: '/instructor/available',
+          builder: (context, state) => const AvailableInternshipsScreen(),
         ),
         GoRoute(
           path: '/instructor/internship/:id/detail',
@@ -197,6 +236,10 @@ class MyApp extends ConsumerWidget {
         ),
         GoRoute(
           path: '/admin/search',
+          builder: (context, state) => const AdvancedSearchScreen(),
+        ),
+        GoRoute(
+          path: '/admin/advanced-search',
           builder: (context, state) => const AdvancedSearchScreen(),
         ),
       ],
