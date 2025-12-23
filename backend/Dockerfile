@@ -35,7 +35,7 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
-# Set JVM options for Koyeb free tier (512MB RAM)
-ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k"
+# Set JVM options for Koyeb (optimize for 512MB RAM, faster startup)
+ENV JAVA_OPTS="-Xms256m -Xmx448m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k -XX:TieredStopAtLevel=1 -noverify"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
