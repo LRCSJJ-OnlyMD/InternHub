@@ -6,11 +6,13 @@
 **/target/
 **/build/
 **/dist/
+**/.angular/
 
 # IDE
 **/.idea/
 **/.vscode/
 **/*.iml
+**/.metadata
 
 # Environment files
 .env
@@ -23,3 +25,14 @@
 *.log
 .DS_Store
 Thumbs.db
+
+# Flutter/Dart
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/pubspec.lock
+
+# Mobile build artifacts
+mobile/build/
+mobile/.gradle/
+mobile/android/app/build/

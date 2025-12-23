@@ -2,6 +2,17 @@
 
 A comprehensive full-stack internship management system with web and mobile applications.
 
+## 🚀 Quick Start for Azure Deployment
+
+**Ready to deploy?** See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed Azure deployment instructions.
+
+**Key Points:**
+- ✅ Keep monorepo structure - no need to split repositories
+- ✅ Backend: Deploy to Azure Web App (Java 17)
+- ✅ Frontend: Deploy to Azure Static Web App
+- ✅ Database: Azure PostgreSQL Flexible Server (auto-created)
+- ✅ Estimated cost: ~$25-30/month
+
 ## 🏗️ Architecture
 
 ### Technology Stack
@@ -9,8 +20,8 @@ A comprehensive full-stack internship management system with web and mobile appl
 **Backend:**
 - Java 17 + Spring Boot 3.2
 - Spring Security with JWT authentication
-- PostgreSQL 16 database
-- Redis 7 for caching
+- Azure PostgreSQL (production) / PostgreSQL 16 (local)
+- Azure Cache for Redis (optional) / Redis 7 (local)
 - Email notifications (SMTP)
 - REST API with comprehensive endpoints
 
@@ -28,6 +39,9 @@ A comprehensive full-stack internship management system with web and mobile appl
 - Offline support
 
 **Infrastructure:**
+- Azure Web Apps
+- Azure Static Web Apps
+- Azure PostgreSQL Flexible Server
 - Docker & Docker Compose
 - Multi-stage builds
 - Health checks
