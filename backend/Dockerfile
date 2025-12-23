@@ -31,8 +31,8 @@ VOLUME /internship-reports
 
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+# Health check - longer start period for slow startup on 512MB RAM
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
 # Set JVM options for Koyeb free tier (512MB RAM)

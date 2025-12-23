@@ -126,15 +126,15 @@
             <version>3.5.3</version>
         </dependency>
 
-        <!-- Redis for Caching and Backup -->
-        <dependency>
+        <!-- Redis disabled for Koyeb deployment -->
+        <!-- <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- Validation -->
         <dependency>
