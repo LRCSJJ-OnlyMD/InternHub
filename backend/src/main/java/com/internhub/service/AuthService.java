@@ -37,7 +37,6 @@ public class AuthService {
     private final TwoFactorAuthService twoFactorAuthService;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
-    private final RedisBackupService redisBackupService;
     private final ActivityLogService activityLogService;
 
     public AuthService(
@@ -48,7 +47,6 @@ public class AuthService {
             TwoFactorAuthService twoFactorAuthService,
             JwtTokenProvider jwtTokenProvider,
             AuthenticationManager authenticationManager,
-            RedisBackupService redisBackupService,
             ActivityLogService activityLogService) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
@@ -57,7 +55,6 @@ public class AuthService {
         this.twoFactorAuthService = twoFactorAuthService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
-        this.redisBackupService = redisBackupService;
         this.activityLogService = activityLogService;
     }
 
@@ -79,9 +76,6 @@ public class AuthService {
 
         userRepository.save(user);
 
-        // Backup to Redis for emergency recovery
-        redisBackupService.cacheUser(user);
-
         // Log activity
         activityLogService.logActivity(user.getEmail(), ActivityLogService.ACTION_REGISTER,
                 "User registered successfully");
@@ -89,9 +83,6 @@ public class AuthService {
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken(token, user, "EMAIL_VERIFICATION");
         tokenRepository.save(verificationToken);
-
-        // Cache token for quick verification
-        redisBackupService.cacheVerificationToken(token, user.getId());
 
         emailService.sendVerificationEmail(user.getEmail(), token);
 
@@ -115,9 +106,6 @@ public class AuthService {
         user.setEnabled(true);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
-
-        // Update cached user data
-        redisBackupService.updateCachedUser(user);
 
         tokenRepository.delete(verificationToken);
 
@@ -301,9 +289,6 @@ public class AuthService {
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
 
-        // Update cached user data
-        redisBackupService.updateCachedUser(user);
-
         return new AuthResponse(null, user.getEmail(), user.getFirstName(),
                 user.getLastName(), user.getRole().name(), user.isTwoFactorEnabled(), null, user.getId());
     }
@@ -323,9 +308,6 @@ public class AuthService {
         user.setMustChangePassword(false);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
-
-        // Update cached user data
-        redisBackupService.updateCachedUser(user);
 
         return new MessageResponse("Password changed successfully");
     }
@@ -361,9 +343,6 @@ public class AuthService {
         user.setActivationTokenExpiry(null);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
-
-        // Update cached user data
-        redisBackupService.updateCachedUser(user);
 
         // Generate JWT token for auto-login
         String token = jwtTokenProvider.generateToken(user.getEmail());
