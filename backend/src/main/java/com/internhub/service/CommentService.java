@@ -1,5 +1,11 @@
 package com.internhub.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.internhub.dto.CommentDTO;
 import com.internhub.dto.CommentRequest;
 import com.internhub.exception.ResourceNotFoundException;
@@ -10,11 +16,6 @@ import com.internhub.model.User;
 import com.internhub.repository.CommentRepository;
 import com.internhub.repository.InternshipRepository;
 import com.internhub.repository.UserRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service for managing comments on internships.
