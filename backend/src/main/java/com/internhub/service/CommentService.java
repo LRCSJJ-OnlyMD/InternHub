@@ -10,11 +10,9 @@ import com.internhub.model.User;
 import com.internhub.repository.CommentRepository;
 import com.internhub.repository.InternshipRepository;
 import com.internhub.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,7 +28,6 @@ public class CommentService {
     private final NotificationService notificationService;
     private final ActivityLogService activityLogService;
 
-    @Autowired
     public CommentService(CommentRepository commentRepository,
             InternshipRepository internshipRepository,
             UserRepository userRepository,

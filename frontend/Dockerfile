@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including dev dependencies needed for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -24,11 +24,11 @@ RUN npm run build -- --configuration production
 # Runtime stage
 FROM nginx:alpine
 
-# Install envsubst for runtime environment variable substitution
-RUN apk add --no-cache bash
+# Install envsubst for runtime environment variable substitution and wget for health check
+RUN apk add --no-cache bash wget
 
-# Copy built application
-COPY --from=build /app/dist/internhub-frontend /usr/share/nginx/html
+# Copy built application (Angular 19 outputs to browser subdirectory)
+COPY --from=build /app/dist/internhub-frontend/browser /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
