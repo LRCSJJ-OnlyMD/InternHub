@@ -9,18 +9,19 @@
       <a class="nav-item" [class.active]="activeSection === 'overview'" (click)="setActiveSection('overview')">
         <span class="nav-label">📊 Overview</span>
       </a>
-      <a class="nav-item" [class.active]="activeSection === 'available'" (click)="setActiveSection('available')">
-        <span class="nav-label">🔔 Available 
-          <span class="badge-count" *ngIf="availableInternships.length > 0">{{ availableInternships.length }}</span>
-        </span>
-      </a>
       <a class="nav-item" [class.active]="activeSection === 'pending'" (click)="setActiveSection('pending')">
-        <span class="nav-label">⏳ My Internships
+        <span class="nav-label">⏳ Pending Review
           <span class="badge-count" *ngIf="pendingInternships.length > 0">{{ pendingInternships.length }}</span>
         </span>
       </a>
       <a class="nav-item" [class.active]="activeSection === 'validated'" (click)="setActiveSection('validated')">
         <span class="nav-label">✅ Validated</span>
+      </a>
+      <a class="nav-item" routerLink="/chat">
+        <span class="nav-label">💬 Messages</span>
+      </a>
+      <a class="nav-item" routerLink="/library">
+        <span class="nav-label">📚 Library</span>
       </a>
       <a class="nav-item" [class.active]="activeSection === 'settings'" (click)="setActiveSection('settings')">
         <span class="nav-label">⚙️ Settings</span>
@@ -28,7 +29,7 @@
     </nav>
     <div class="sidebar-footer">
       <button class="btn-logout" (click)="logout()">
-        <span class="nav-label">Logout</span>
+        <span class="nav-label">🚪 Logout</span>
       </button>
     </div>
   </aside>
@@ -51,17 +52,6 @@
     <div class="content-section" *ngIf="activeSection === 'overview'">
       <!-- Stats Cards Grid -->
       <div class="overview-stats-grid">
-        <div class="stat-card-modern clickable" (click)="setActiveSection('available')">
-          <div class="stat-icon info-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ availableInternships.length }}</div>
-            <div class="stat-label">Available to Claim</div>
-          </div>
-        </div>
         <div class="stat-card-modern clickable" (click)="setActiveSection('pending')">
           <div class="stat-icon warning-icon">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,7 +60,7 @@
           </div>
           <div class="stat-content">
             <div class="stat-value">{{ pendingInternships.length }}</div>
-            <div class="stat-label">My Internships</div>
+            <div class="stat-label">Pending Review</div>
           </div>
         </div>
         <div class="stat-card-modern clickable" (click)="setActiveSection('validated')">
@@ -92,9 +82,17 @@
           </div>
           <div class="stat-content">
             <div class="stat-value">{{ pendingInternships.length + validatedInternships.length }}</div>
-            <div class="stat-label">Total Managed</div>
+            <div class="stat-label">Total Assigned</div>
           </div>
         </div>
+      </div>
+
+      <!-- Info Banner about Auto-Assignment -->
+      <div class="info-banner">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p>Internships are <strong>automatically assigned</strong> to you based on your sectors. When a student submits an internship in your sector, it will appear in your "Pending Review" list.</p>
       </div>
 
       <!-- Quick Actions -->
@@ -106,18 +104,11 @@
           Quick Actions
         </h2>
         <div class="actions-grid">
-          <button class="action-card" (click)="setActiveSection('available')" *ngIf="availableInternships.length > 0">
-            <div class="action-icon info">🔔</div>
-            <div class="action-content">
-              <h3>Claim Internships</h3>
-              <p>{{ availableInternships.length }} new internships available in your sectors</p>
-            </div>
-          </button>
-          <button class="action-card" (click)="setActiveSection('pending')">
+          <button class="action-card" (click)="setActiveSection('pending')" *ngIf="pendingInternships.length > 0">
             <div class="action-icon warning">⏳</div>
             <div class="action-content">
-              <h3>Review My Internships</h3>
-              <p>{{ pendingInternships.length }} internships awaiting validation</p>
+              <h3>Review Pending</h3>
+              <p>{{ pendingInternships.length }} internships need your review</p>
             </div>
           </button>
           <button class="action-card" (click)="setActiveSection('validated')">
@@ -127,94 +118,25 @@
               <p>{{ validatedInternships.length }} approved internships</p>
             </div>
           </button>
+          <button class="action-card" routerLink="/chat">
+            <div class="action-icon info">💬</div>
+            <div class="action-content">
+              <h3>Messages</h3>
+              <p>Chat with students about their internships</p>
+            </div>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Available Internships Section (NEW) -->
-    <div class="content-section" *ngIf="activeSection === 'available'">
+    <!-- Pending Review Section (renamed from "My Internships") -->
+    <div class="content-section" *ngIf="activeSection === 'pending'">
       <div class="section-header-info">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <p>These internships have been submitted by students and are waiting to be claimed by an instructor in your sectors. Click "Claim" to take ownership and validate them.</p>
+        <p>These internships have been automatically assigned to you based on your sectors. Review and validate or refuse each internship.</p>
       </div>
-
-      <div class="internships-modern-list" *ngIf="availableInternships.length > 0">
-        <div class="internship-card-modern available" *ngFor="let internship of availableInternships">
-          <div class="card-header-modern">
-            <div class="header-content">
-              <h3>{{ internship.title }}</h3>
-              <span class="status-badge status-available">🔔 AVAILABLE</span>
-            </div>
-          </div>
-          
-          <div class="card-body-modern">
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-icon">👤</span>
-                <div>
-                  <span class="info-label">Student</span>
-                  <span class="info-value">{{ internship.studentName }}</span>
-                  <span class="info-subtext">{{ internship.studentEmail }}</span>
-                </div>
-              </div>
-              <div class="info-item">
-                <span class="info-icon">🏢</span>
-                <div>
-                  <span class="info-label">Company</span>
-                  <span class="info-value">{{ internship.companyName }}</span>
-                </div>
-              </div>
-              <div class="info-item">
-                <span class="info-icon">🎯</span>
-                <div>
-                  <span class="info-label">Sector</span>
-                  <span class="info-value">{{ internship.sectorName }}</span>
-                </div>
-              </div>
-              <div class="info-item">
-                <span class="info-icon">📅</span>
-                <div>
-                  <span class="info-label">Period</span>
-                  <span class="info-value">{{ internship.startDate }} to {{ internship.endDate }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="description-section" *ngIf="internship.description">
-              <p class="description-label">Description:</p>
-              <p class="description-text">{{ internship.description }}</p>
-            </div>
-          </div>
-          
-          <div class="card-actions-modern">
-            <button class="btn-claim-modern" (click)="claimInternship(internship.id)">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg>
-              Claim Internship
-            </button>
-            <button class="btn-details-modern" (click)="viewDetails(internship)">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Details
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="availableInternships.length === 0" class="empty-state-modern">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h3>No Available Internships</h3>
-        <p>All internships in your sectors have been claimed</p>
-      </div>
-    </div>
-
-    <!-- My Internships Section (Previously "Pending") -->
-    <div class="content-section" *ngIf="activeSection === 'pending'">
       <div class="internships-modern-list" *ngIf="pendingInternships.length > 0">
         <div class="internship-card-modern" *ngFor="let internship of pendingInternships">
           <div class="card-header-modern">

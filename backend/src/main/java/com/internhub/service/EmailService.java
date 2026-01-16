@@ -198,6 +198,38 @@ public class EmailService {
         mailSender.send(message);
     }
 
+    // Student approval email
+    public void sendStudentApprovalEmail(String toEmail, String firstName) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Account Approved - Welcome to InternHub!");
+        message.setText("Dear " + firstName + ",\n\n"
+                + "Great news! Your student account has been approved by the administrator.\n\n"
+                + "You can now log in and start using InternHub to manage your internship applications.\n\n"
+                + "Login URL: " + frontendUrl + "/login\n\n"
+                + "Best regards,\n"
+                + "InternHub Team");
+
+        mailSender.send(message);
+    }
+
+    // Student rejection email
+    public void sendStudentRejectionEmail(String toEmail, String firstName, String reason) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Account Application Update - InternHub");
+        message.setText("Dear " + firstName + ",\n\n"
+                + "We regret to inform you that your account application has not been approved.\n\n"
+                + "Reason: " + reason + "\n\n"
+                + "If you believe this is a mistake or have questions, please contact the school administration.\n\n"
+                + "Best regards,\n"
+                + "InternHub Team");
+
+        mailSender.send(message);
+    }
+
     // Generic email sending method for custom messages
     public void sendEmail(String toEmail, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();

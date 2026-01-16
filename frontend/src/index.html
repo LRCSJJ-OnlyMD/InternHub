@@ -8,6 +8,11 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Polyfill for Node.js global variable (required for sockjs-client) -->
+  <script>
+    var global = window;
+    var process = { env: { DEBUG: undefined } };
+  </script>
 </head>
 <body>
   <app-root></app-root>

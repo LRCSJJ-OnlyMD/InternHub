@@ -35,6 +35,12 @@ dependencies:
   # Utilities
   timeago: ^3.6.0
   file_picker: ^8.0.0
+  
+  # Push Notifications
+  flutter_local_notifications: ^19.0.0
+  
+  # WebSocket for real-time
+  web_socket_channel: ^3.0.2
 
 dev_dependencies:
   flutter_test:

@@ -75,6 +75,21 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   { 
+    path: 'chat', 
+    loadComponent: () => import('./components/chat/chat.component').then(m => m.ChatComponent),
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'chat/:conversationId', 
+    loadComponent: () => import('./components/chat/chat.component').then(m => m.ChatComponent),
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'library', 
+    loadComponent: () => import('./components/library/library.component').then(m => m.LibraryComponent),
+    canActivate: [authGuard]
+  },
+  { 
     path: 'dashboard', 
     redirectTo: '/login',
     pathMatch: 'full'

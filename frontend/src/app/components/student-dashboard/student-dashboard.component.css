@@ -84,7 +84,7 @@
 /* Sidebar */
 .sidebar {
   width: 280px;
-  background: white;
+  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
   border-right: 2px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -141,13 +141,6 @@
   border-left: none;
 }
 
-.nav-item mat-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
-  margin-right: 0;
-}
-
 .nav-item:hover {
   background: var(--primary-lighter);
   color: var(--primary-dark);
@@ -155,18 +148,14 @@
 }
 
 .nav-item.active {
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
   color: white;
   font-weight: 600;
   box-shadow: var(--shadow-md);
 }
 
-.nav-item.active mat-icon {
-  color: white;
-}
-
 .nav-label {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
 }
 
 .sidebar-footer {
@@ -177,7 +166,6 @@
 .btn-logout {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
   width: 100%;
   padding: 0.75rem 1rem;
   background: var(--bg-tertiary);
@@ -189,18 +177,8 @@
   font-size: 0.875rem;
 }
 
-.btn-logout mat-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
-}
-
 .btn-logout:hover {
   background: var(--error-color);
-  color: white;
-}
-
-.btn-logout:hover mat-icon {
   color: white;
 }
 
@@ -1565,10 +1543,12 @@ input[type="date"].form-control:hover::-webkit-calendar-picker-indicator {
   gap: 0.75rem;
 }
 
+.btn-details-modern,
 .btn-edit-modern,
 .btn-submit-modern,
 .btn-upload-modern,
-.btn-download-modern {
+.btn-download-modern,
+.btn-uploading {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -1579,6 +1559,19 @@ input[type="date"].form-control:hover::-webkit-calendar-picker-indicator {
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.btn-details-modern {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-details-modern:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .btn-edit-modern {
@@ -1592,6 +1585,27 @@ input[type="date"].form-control:hover::-webkit-calendar-picker-indicator {
   border-color: #4f46e5;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.btn-uploading {
+  background: #fef3c7;
+  color: #d97706;
+  cursor: wait;
+}
+
+.btn-uploading mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.btn-uploading .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .btn-submit-modern {
@@ -1621,6 +1635,7 @@ input[type="date"].form-control:hover::-webkit-calendar-picker-indicator {
   background: #2563eb;
 }
 
+.btn-details-modern svg,
 .btn-edit-modern svg,
 .btn-submit-modern svg,
 .btn-upload-modern svg,

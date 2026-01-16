@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { NotificationService, Notification } from '../../services/notification.service';
+import { RealTimeNotificationService } from '../../services/realtime-notification.service';
 
 @Component({
   selector: 'app-notification-bell',
@@ -18,22 +19,53 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   notifications: Notification[] = [];
   showDropdown = false;
   isLoading = false;
+  isConnected = false;
   private subscription = new Subscription();
 
   constructor(
     private notificationService: NotificationService,
+    private realTimeService: RealTimeNotificationService,
     private router: Router,
     private elementRef: ElementRef
   ) {}
 
   ngOnInit(): void {
+    // Subscribe to unread count from regular service
     this.subscription.add(
       this.notificationService.unreadCount$.subscribe(count => {
         this.unreadCount = count;
       })
     );
+
+    // Subscribe to real-time unread count updates
+    this.subscription.add(
+      this.realTimeService.unreadCount$.subscribe(count => {
+        if (count > 0) {
+          this.unreadCount = count;
+        }
+      })
+    );
+
+    // Subscribe to connection status
+    this.subscription.add(
+      this.realTimeService.connectionStatus$.subscribe(connected => {
+        this.isConnected = connected;
+      })
+    );
+
+    // Subscribe to real-time notifications to refresh the list
+    this.subscription.add(
+      this.realTimeService.notification$.subscribe(() => {
+        if (this.showDropdown) {
+          this.loadNotifications();
+        }
+      })
+    );
     
     this.notificationService.refreshUnreadCount();
+
+    // Request browser notification permission
+    this.realTimeService.requestNotificationPermission();
   }
 
   ngOnDestroy(): void {

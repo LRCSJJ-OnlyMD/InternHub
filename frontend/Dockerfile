@@ -27,8 +27,8 @@ FROM nginx:alpine
 # Install envsubst for runtime environment variable substitution and wget for health check
 RUN apk add --no-cache bash wget
 
-# Copy built application (Angular 19 outputs to browser subdirectory)
-COPY --from=build /app/dist/internhub-frontend/browser /usr/share/nginx/html
+# Copy built application (Angular outputs directly to dist/internhub-frontend)
+COPY --from=build /app/dist/internhub-frontend /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf

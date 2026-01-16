@@ -63,6 +63,14 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/api/health/**", "/api/utility/**", "/actuator/health", "/error").permitAll()
+                // WebSocket endpoint - authentication handled by WebSocketSecurityConfig
+                .requestMatchers("/ws/**").permitAll()
+                // Public library endpoints
+                .requestMatchers("/api/library/documents", "/api/library/search", "/api/library/sector/**",
+                        "/api/library/year/**", "/api/library/featured", "/api/library/recent",
+                        "/api/library/popular", "/api/library/statistics", "/api/library/sectors",
+                        "/api/library/academic-years").permitAll()
+                .requestMatchers("/api/library/documents/*/download", "/api/library/documents/*/view").permitAll()
                 .requestMatchers("/api/admin/sectors/**").authenticated() // Allow all authenticated users to read sectors
                 .anyRequest().authenticated()
                 );
@@ -79,13 +87,16 @@ public class SecurityConfig {
         // Allow frontend URL from environment variable (supports both local and Azure)
         configuration.setAllowedOrigins(List.of(
                 frontendUrl,
+                "http://localhost",
+                "http://localhost:80",
                 "http://localhost:4200",
                 "http://localhost:3000",
                 "http://localhost:3001"
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Disposition"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -109,7 +109,7 @@ public class AuthService {
 
         tokenRepository.delete(verificationToken);
 
-        return new MessageResponse("Email verified successfully. You can now login.");
+        return new MessageResponse("Email verified successfully. Your account is now pending administrator approval. You will be notified once your account is approved.");
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -118,6 +118,11 @@ public class AuthService {
 
         if (!user.isEnabled()) {
             throw new RuntimeException("Please verify your email before logging in");
+        }
+
+        // Check if student needs admin approval
+        if (user.getRole() == Role.STUDENT && !user.isAdminApproved()) {
+            throw new RuntimeException("Your account is pending administrator approval. Please wait for approval before logging in.");
         }
 
         Authentication authentication = authenticationManager.authenticate(

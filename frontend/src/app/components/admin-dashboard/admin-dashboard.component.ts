@@ -22,7 +22,11 @@ interface UserDTO {
   firstName: string;
   lastName: string;
   role: string;
+  enabled?: boolean;
+  adminApproved?: boolean;
+  createdAt?: string;
   sectorNames?: string[];
+  sectorIds?: number[];
 }
 
 Chart.register(...registerables);
@@ -66,6 +70,13 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   isSavingSector: boolean = false;
   sectorAlertMessage: string = '';
   sectorAlertType: 'success' | 'error' = 'success';
+  
+  // Student Management
+  students: UserDTO[] = [];
+  pendingStudents: UserDTO[] = [];
+  isLoadingStudents: boolean = false;
+  studentAlertMessage: string = '';
+  studentAlertType: 'success' | 'error' = 'success';
   
   // Reports Management
   reportFilterSector: string = '';
@@ -147,6 +158,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     this.loadAllInternships();
     this.loadSectors();
     this.loadInstructors();
+    this.loadStudents();
+    this.loadPendingStudents();
   }
 
   ngAfterViewInit(): void {
@@ -483,6 +496,101 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  // Student Management Methods
+  loadStudents(): void {
+    this.isLoadingStudents = true;
+    this.http.get<UserDTO[]>(`${this.apiUrl}/students`).subscribe({
+      next: (data) => {
+        this.students = data;
+        this.isLoadingStudents = false;
+      },
+      error: (err) => {
+        console.error('Error loading students', err);
+        this.showStudentAlert('Failed to load students', 'error');
+        this.isLoadingStudents = false;
+      }
+    });
+  }
+
+  loadPendingStudents(): void {
+    this.http.get<UserDTO[]>(`${this.apiUrl}/students/pending`).subscribe({
+      next: (data) => {
+        this.pendingStudents = data;
+      },
+      error: (err) => {
+        console.error('Error loading pending students', err);
+      }
+    });
+  }
+
+  approveStudent(id: number): void {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Approve Student',
+        message: 'Are you sure you want to approve this student? They will be able to access the system.',
+        confirmText: 'Approve',
+        cancelText: 'Cancel',
+        type: 'success'
+      },
+      width: '400px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.http.post(`${this.apiUrl}/students/${id}/approve`, {}).subscribe({
+          next: () => {
+            this.showStudentAlert('Student approved successfully', 'success');
+            this.loadStudents();
+            this.loadPendingStudents();
+          },
+          error: (err) => {
+            console.error('Error approving student', err);
+            this.showStudentAlert(err.error?.message || 'Failed to approve student', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  rejectStudent(id: number): void {
+    const reason = prompt('Please provide a reason for rejection (optional):');
+    
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Reject Student',
+        message: 'Are you sure you want to reject this student? Their account will be removed.',
+        confirmText: 'Reject',
+        cancelText: 'Cancel',
+        type: 'error'
+      },
+      width: '400px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.http.post(`${this.apiUrl}/students/${id}/reject`, { reason: reason || 'Your application was not approved.' }).subscribe({
+          next: () => {
+            this.showStudentAlert('Student rejected successfully', 'success');
+            this.loadStudents();
+            this.loadPendingStudents();
+          },
+          error: (err) => {
+            console.error('Error rejecting student', err);
+            this.showStudentAlert(err.error?.message || 'Failed to reject student', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  showStudentAlert(message: string, type: 'success' | 'error'): void {
+    this.studentAlertMessage = message;
+    this.studentAlertType = type;
+    setTimeout(() => {
+      this.studentAlertMessage = '';
+    }, 5000);
   }
 
   showAlert(message: string, type: 'success' | 'error'): void {

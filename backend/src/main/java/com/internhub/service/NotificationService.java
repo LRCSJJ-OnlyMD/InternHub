@@ -25,13 +25,16 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationPreferenceService preferenceService;
     private final EmailService emailService;
+    private final PushNotificationService pushNotificationService;
 
     public NotificationService(NotificationRepository notificationRepository,
             NotificationPreferenceService preferenceService,
-            EmailService emailService) {
+            EmailService emailService,
+            PushNotificationService pushNotificationService) {
         this.notificationRepository = notificationRepository;
         this.preferenceService = preferenceService;
         this.emailService = emailService;
+        this.pushNotificationService = pushNotificationService;
     }
 
     @Transactional
@@ -44,29 +47,45 @@ public class NotificationService {
             String entityType, Long entityId) {
         // Map notification type string to enum
         NotificationType notificationType = mapToNotificationType(type);
+        Notification notification = null;
 
         // Check if in-app notifications are enabled
         if (preferenceService.isChannelEnabled(user.getId(), notificationType, "in_app")) {
-            Notification notification = new Notification(user, type, title, message, entityType, entityId);
+            notification = new Notification(user, type, title, message, entityType, entityId);
             notification = notificationRepository.save(notification);
             log.debug("Created in-app notification for user {}: {}", user.getId(), title);
+        }
+
+        // Send push notification if enabled (real-time WebSocket)
+        if (preferenceService.isChannelEnabled(user.getId(), notificationType, "push")) {
+            try {
+                if (notification != null) {
+                    pushNotificationService.sendToUser(user, notification);
+                } else {
+                    // Create a temporary notification for push only
+                    Notification tempNotification = new Notification(user, type, title, message, entityType, entityId);
+                    pushNotificationService.sendToUser(user, tempNotification);
+                }
+                // Also send unread count update
+                long unreadCount = notificationRepository.countByUserAndReadFalse(user);
+                pushNotificationService.sendUnreadCountUpdate(user.getId(), unreadCount);
+                log.debug("Sent push notification to user {}: {}", user.getId(), title);
+            } catch (Exception e) {
+                log.error("Failed to send push notification to user {}: {}", user.getId(), e.getMessage());
+            }
         }
 
         // Send email notification if enabled
         if (preferenceService.isChannelEnabled(user.getId(), notificationType, "email")) {
             try {
-                sendEmailNotification(user, title, message);
+                sendEmailNotification(user, title, message, type);
                 log.debug("Sent email notification to user {}: {}", user.getId(), title);
             } catch (Exception e) {
                 log.error("Failed to send email notification to user {}: {}", user.getId(), e.getMessage());
             }
         }
 
-        // TODO: Send push notification if enabled
-        // if (preferenceService.isChannelEnabled(user.getId(), notificationType, "push")) {
-        //     sendPushNotification(user, title, message);
-        // }
-        return notificationRepository.findFirstByUserOrderByCreatedAtDesc(user)
+        return notification != null ? notification : notificationRepository.findFirstByUserOrderByCreatedAtDesc(user)
                 .orElse(new Notification(user, type, title, message));
     }
 
@@ -93,13 +112,47 @@ public class NotificationService {
         };
     }
 
-    private void sendEmailNotification(User user, String title, String message) {
+    private void sendEmailNotification(User user, String title, String message, String type) {
         String subject = "InternHub: " + title;
+        String iconEmoji = getNotificationEmoji(type);
         String body = String.format(
-                "Hello %s %s,\n\n%s\n\nBest regards,\nInternHub Team",
-                user.getFirstName(), user.getLastName(), message
+                "Hello %s %s,\n\n"
+                + "%s %s\n\n"
+                + "%s\n\n"
+                + "---\n"
+                + "You can view more details by logging into InternHub.\n\n"
+                + "Best regards,\n"
+                + "The InternHub Team\n\n"
+                + "---\n"
+                + "To manage your notification preferences, visit your profile settings.",
+                user.getFirstName(), user.getLastName(),
+                iconEmoji, title,
+                message
         );
         emailService.sendEmail(user.getEmail(), subject, body);
+    }
+
+    private String getNotificationEmoji(String type) {
+        return switch (type) {
+            case "VALIDATE", "INTERNSHIP_VALIDATED" ->
+                "✅";
+            case "REFUSE", "INTERNSHIP_REFUSED" ->
+                "❌";
+            case "CLAIM", "INTERNSHIP_ASSIGNED" ->
+                "🎯";
+            case "INTERNSHIP_STATUS" ->
+                "📋";
+            case "COMMENT_ADDED" ->
+                "💬";
+            case "REPORT_UPLOADED" ->
+                "📄";
+            case "DEADLINE" ->
+                "⏰";
+            case "CHAT_MESSAGE" ->
+                "💬";
+            default ->
+                "📢";
+        };
     }
 
     public Page<NotificationDTO> getUserNotifications(User user, int page, int size) {
@@ -206,5 +259,29 @@ public class NotificationService {
                 isReply ? "replied to your comment" : "commented",
                 internship.getTitle());
         createNotification(recipient, "COMMENT_ADDED", title, message, "INTERNSHIP", internship.getId());
+    }
+
+    /**
+     * Create a notification for new chat message
+     */
+    @Transactional
+    public void createChatNotification(Long recipientId, String senderName, Long conversationId) {
+        User recipient = new User();
+        recipient.setId(recipientId);
+
+        String title = "New Message";
+        String message = String.format("You have a new message from %s", senderName);
+
+        // Create notification without full user lookup for performance
+        Notification notification = new Notification();
+        notification.setUser(recipient);
+        notification.setType("CHAT_MESSAGE");
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setEntityType("CONVERSATION");
+        notification.setEntityId(conversationId);
+        notification.setRead(false);
+
+        notificationRepository.save(notification);
     }
 }

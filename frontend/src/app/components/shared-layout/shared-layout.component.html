@@ -1,0 +1,76 @@
+<div class="layout-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="/images/logo/logo.png" alt="InternHub" class="sidebar-logo">
+      <h2>{{ portalName }}</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" [routerLink]="dashboardLink" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <span class="nav-label">📊 Dashboard</span>
+      </a>
+      
+      <!-- Student specific links -->
+      @if (userRole === 'STUDENT') {
+        <a class="nav-item" routerLink="/student-dashboard" [queryParams]="{section: 'internships'}">
+          <span class="nav-label">💼 My Internships</span>
+        </a>
+      }
+      
+      <!-- Instructor specific links -->
+      @if (userRole === 'INSTRUCTOR') {
+        <a class="nav-item" routerLink="/instructor-dashboard" [queryParams]="{section: 'pending'}">
+          <span class="nav-label">⏳ Pending</span>
+        </a>
+      }
+      
+      <!-- Admin specific links -->
+      @if (userRole === 'ADMIN') {
+        <a class="nav-item" routerLink="/admin-dashboard" [queryParams]="{section: 'users'}">
+          <span class="nav-label">👥 Users</span>
+        </a>
+      }
+      
+      <!-- Common navigation items -->
+      <a class="nav-item" routerLink="/chat" routerLinkActive="active">
+        <span class="nav-label">💬 Messages</span>
+      </a>
+      <a class="nav-item" routerLink="/library" routerLinkActive="active">
+        <span class="nav-label">📚 Library</span>
+      </a>
+      <a class="nav-item" routerLink="/notification-preferences" routerLinkActive="active">
+        <span class="nav-label">🔔 Notifications</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" (click)="logout()">
+        <span class="nav-label">🚪 Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="content-header">
+      <div class="header-title">
+        <h1>{{ pageTitle }}</h1>
+        @if (pageSubtitle) {
+          <p class="subtitle">{{ pageSubtitle }}</p>
+        }
+      </div>
+      <div class="header-actions">
+        <app-notification-bell></app-notification-bell>
+        <div class="user-info">
+          <span class="user-name">{{ userName }}</span>
+          <span class="user-role">{{ userRole | titlecase }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content (projected) -->
+    <div class="page-content">
+      <ng-content></ng-content>
+    </div>
+  </main>
+</div>

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -22,6 +22,7 @@ import { AuthService } from '../../services/auth.service';
 import { InternshipResponse, InternshipRequest, Sector, InternshipStatus } from '../../models/internship.model';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
+import { InternshipDetailDialogComponent } from '../internship-detail-dialog/internship-detail-dialog.component';
 
 /**
  * Student dashboard component for managing internships.
@@ -48,7 +49,8 @@ import { NotificationBellComponent } from '../notification-bell/notification-bel
     MatMenuModule,
     MatDialogModule,
     MatSnackBarModule,
-    NotificationBellComponent
+    NotificationBellComponent,
+    RouterLink
   ],
   templateUrl: './student-dashboard.component.html',
   styleUrls: ['./student-dashboard.component.css']
@@ -62,6 +64,7 @@ export class StudentDashboardComponent implements OnInit {
   selectedInternship: InternshipResponse | null = null;
   isEditing = false;
   isCreating = false;
+  isUploading = false;
   selectedFile: File | null = null;
   InternshipStatus = InternshipStatus;
   
@@ -344,20 +347,11 @@ export class StudentDashboardComponent implements OnInit {
 
   onFileSelected(event: any, internshipId: number): void {
     const file = event.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      this.internshipService.uploadReport(internshipId, file).subscribe({
-        next: () => {
-          this.snackBar.open('Report uploaded successfully', 'Close', {
-            duration: 3000,
-            horizontalPosition: 'end',
-            verticalPosition: 'top',
-            panelClass: ['success-snackbar']
-          });
-          this.loadInternships();
-        },
-        error: (err) => console.error('Error uploading report', err)
-      });
-    } else {
+    const inputElement = event.target as HTMLInputElement;
+    
+    if (!file) return;
+    
+    if (file.type !== 'application/pdf') {
       this.dialog.open(ConfirmationDialogComponent, {
         data: {
           title: 'Invalid File Type',
@@ -367,7 +361,61 @@ export class StudentDashboardComponent implements OnInit {
         },
         width: '400px'
       });
+      inputElement.value = ''; // Reset input
+      return;
     }
+    
+    if (file.size > 10 * 1024 * 1024) {
+      this.dialog.open(ConfirmationDialogComponent, {
+        data: {
+          title: 'File Too Large',
+          message: 'File size must be less than 10MB',
+          confirmText: 'OK',
+          type: 'warning'
+        },
+        width: '400px'
+      });
+      inputElement.value = ''; // Reset input
+      return;
+    }
+    
+    this.isUploading = true;
+    
+    this.internshipService.uploadReport(internshipId, file).subscribe({
+      next: () => {
+        this.isUploading = false;
+        inputElement.value = ''; // Reset input after successful upload
+        this.snackBar.open('Report uploaded successfully! It will be available in the library once validated.', 'Close', {
+          duration: 5000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+        this.loadInternships();
+      },
+      error: (err) => {
+        this.isUploading = false;
+        inputElement.value = ''; // Reset input on error
+        console.error('Error uploading report', err);
+        this.dialog.open(ConfirmationDialogComponent, {
+          data: {
+            title: 'Upload Failed',
+            message: 'Failed to upload report. Please try again.',
+            confirmText: 'OK',
+            type: 'error'
+          },
+          width: '400px'
+        });
+      }
+    });
+  }
+
+  viewInternshipDetails(internship: InternshipResponse): void {
+    this.dialog.open(InternshipDetailDialogComponent, {
+      data: { internship },
+      width: '550px',
+      maxHeight: '90vh'
+    });
   }
 
   viewReport(internshipId: number): void {

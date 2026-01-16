@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InternshipService } from '../../services/internship.service';
@@ -18,7 +18,7 @@ import { NotificationBellComponent } from '../notification-bell/notification-bel
 @Component({
   selector: 'app-instructor-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, MatDialogModule, MatSnackBarModule, NotificationBellComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, MatDialogModule, MatSnackBarModule, NotificationBellComponent, RouterLink],
   templateUrl: './instructor-dashboard.component.html',
   styleUrls: ['./instructor-dashboard.component.css']
 })
@@ -67,7 +67,6 @@ export class InstructorDashboardComponent implements OnInit {
       : currentUser?.email || 'User';
     this.userEmail = currentUser?.email || '';
     this.loadUserInfo();
-    this.loadAvailableInternships();
     this.loadPendingInternships();
   }
 
@@ -75,16 +74,13 @@ export class InstructorDashboardComponent implements OnInit {
     this.activeSection = section;
     if (section === 'validated') {
       this.loadValidatedInternships();
-    } else if (section === 'available') {
-      this.loadAvailableInternships();
     }
   }
 
   getSectionTitle(): string {
     const titles: { [key: string]: string } = {
       'overview': 'Dashboard Overview',
-      'available': `Available Internships (${this.availableInternships.length})`,
-      'pending': `My Internships (${this.pendingInternships.length})`,
+      'pending': `Pending Review (${this.pendingInternships.length})`,
       'validated': `Validated Internships (${this.validatedInternships.length})`,
       'refused': 'Refused Internships',
       'settings': 'Settings'

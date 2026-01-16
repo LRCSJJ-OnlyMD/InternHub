@@ -24,6 +24,8 @@ import com.internhub.model.InternshipStatus;
 import com.internhub.model.Role;
 import com.internhub.model.Sector;
 import com.internhub.model.User;
+import com.internhub.model.Document;
+import com.internhub.repository.DocumentRepository;
 import com.internhub.repository.InternshipRepository;
 import com.internhub.repository.SectorRepository;
 import com.internhub.repository.UserRepository;
@@ -46,6 +48,7 @@ public class InternshipServiceImpl implements InternshipService {
     private final InternshipRepository internshipRepository;
     private final UserRepository userRepository;
     private final SectorRepository sectorRepository;
+    private final DocumentRepository documentRepository;
     private final EmailService emailService;
     private final NotificationService notificationService;
     private final ActivityLogService activityLogService;
@@ -53,12 +56,14 @@ public class InternshipServiceImpl implements InternshipService {
     public InternshipServiceImpl(InternshipRepository internshipRepository,
             UserRepository userRepository,
             SectorRepository sectorRepository,
+            DocumentRepository documentRepository,
             EmailService emailService,
             NotificationService notificationService,
             ActivityLogService activityLogService) {
         this.internshipRepository = internshipRepository;
         this.userRepository = userRepository;
         this.sectorRepository = sectorRepository;
+        this.documentRepository = documentRepository;
         this.emailService = emailService;
         this.notificationService = notificationService;
         this.activityLogService = activityLogService;
@@ -136,28 +141,68 @@ public class InternshipServiceImpl implements InternshipService {
         // Business logic: Use domain method for status transition
         internship.submit();
 
-        // Multi-instructor notification: Notify ALL instructors in the sector
+        // Auto-assignment: Find instructors in the sector and assign to least-loaded one
         List<User> instructors = userRepository.findByRoleAndSectorsContaining(Role.INSTRUCTOR, internship.getSector());
+
         if (!instructors.isEmpty()) {
             String studentName = internship.getStudent().getFirstName() + " " + internship.getStudent().getLastName();
 
-            // Send email and notification to ALL instructors in the sector
-            for (User instructor : instructors) {
+            // Find the instructor with the fewest pending internships (load balancing)
+            User assignedInstructor = findLeastLoadedInstructor(instructors);
+
+            if (assignedInstructor != null) {
+                // Auto-assign the instructor
+                internship.setInstructor(assignedInstructor);
+
+                // Send notification to the assigned instructor
                 emailService.sendInternshipSubmittedEmail(
-                        instructor.getEmail(),
+                        assignedInstructor.getEmail(),
                         studentName,
                         internship.getTitle()
                 );
                 notificationService.notifyInternshipSubmitted(internship);
-            }
 
-            // Don't assign instructor yet - let them claim it
-            internship.setInstructor(null);
+                // Log the auto-assignment
+                activityLogService.logActivity(
+                        assignedInstructor.getEmail(),
+                        ActivityLogService.ACTION_INTERNSHIP_VALIDATE,
+                        "INTERNSHIP", internship.getId(),
+                        "Auto-assigned internship: " + internship.getTitle() + " to "
+                        + assignedInstructor.getFirstName() + " " + assignedInstructor.getLastName()
+                );
+            }
         }
 
         Internship updated = internshipRepository.save(internship);
 
         return mapToResponse(updated);
+    }
+
+    /**
+     * Find the instructor with the fewest pending internships for load
+     * balancing. This ensures fair distribution of internships among
+     * instructors.
+     */
+    private User findLeastLoadedInstructor(List<User> instructors) {
+        if (instructors.isEmpty()) {
+            return null;
+        }
+
+        User leastLoaded = null;
+        long minPendingCount = Long.MAX_VALUE;
+
+        for (User instructor : instructors) {
+            // Count pending internships for this instructor
+            long pendingCount = internshipRepository.countByInstructorIdAndStatus(
+                    instructor.getId(), InternshipStatus.PENDING_VALIDATION);
+
+            if (pendingCount < minPendingCount) {
+                minPendingCount = pendingCount;
+                leastLoaded = instructor;
+            }
+        }
+
+        return leastLoaded;
     }
 
     @Override
@@ -463,9 +508,11 @@ public class InternshipServiceImpl implements InternshipService {
         response.setSectorId(sector.getId());
         response.setSectorName(sector.getName());
 
-        // Report info - now handled via DocumentService, check for documents instead
-        // TODO: Query DocumentService to check if report exists
-        response.setHasReport(false); // Placeholder until DocumentService integration
+        // Report info - check if any report document exists for this internship
+        boolean hasReport = documentRepository
+                .findByInternshipAndDocumentTypeAndIsLatestVersionTrue(internship, Document.DocumentType.REPORT)
+                .isPresent();
+        response.setHasReport(hasReport);
         response.setRefusalComment(internship.getRefusalComment());
 
         // Timestamps

@@ -74,6 +74,10 @@ public class User {
     @Column(name = "must_change_password", columnDefinition = "boolean default false")
     private Boolean mustChangePassword = false;
 
+    // Student approval field - only approved students can access the system
+    @Column(name = "admin_approved", columnDefinition = "boolean default false")
+    private Boolean adminApproved = false;
+
     public User() {
     }
 
@@ -234,5 +238,13 @@ public class User {
 
     public void setMustChangePassword(boolean mustChangePassword) {
         this.mustChangePassword = mustChangePassword;
+    }
+
+    public boolean isAdminApproved() {
+        return adminApproved != null && adminApproved;
+    }
+
+    public void setAdminApproved(boolean adminApproved) {
+        this.adminApproved = adminApproved;
     }
 }

@@ -6,7 +6,6 @@ import '../../providers/admin_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/glowing_card.dart';
 import '../../widgets/stat_card.dart';
-import '../../widgets/animated_gradient_button.dart';
 import '../shared/notification_bell_icon.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {

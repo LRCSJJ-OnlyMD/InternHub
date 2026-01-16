@@ -1,0 +1,313 @@
+<app-shared-layout pageTitle="Document Library" pageSubtitle="Browse validated internship reports and documentation">
+  <div class="library-content">
+    <!-- Statistics -->
+    @if (statistics) {
+      <div class="stats-cards">
+        <div class="stat-card">
+          <mat-icon>description</mat-icon>
+          <div class="stat-info">
+            <span class="stat-value">{{ statistics.totalDocuments }}</span>
+            <span class="stat-label">Documents</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>visibility</mat-icon>
+          <div class="stat-info">
+            <span class="stat-value">{{ statistics.totalViews }}</span>
+            <span class="stat-label">Views</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>download</mat-icon>
+          <div class="stat-info">
+            <span class="stat-value">{{ statistics.totalDownloads }}</span>
+            <span class="stat-label">Downloads</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>trending_up</mat-icon>
+          <div class="stat-info">
+            <span class="stat-value">{{ statistics.documentsThisMonth }}</span>
+            <span class="stat-label">This Month</span>
+          </div>
+        </div>
+      </div>
+    }
+
+  <!-- Tabs -->
+  <mat-tab-group (selectedIndexChange)="onTabChange($event)" class="library-tabs">
+    <!-- Browse Tab -->
+    <mat-tab label="Browse All">
+      <div class="tab-content">
+        <!-- Search & Filters -->
+        <div class="filters-section">
+          <div class="search-box">
+            <mat-form-field appearance="outline">
+              <mat-icon matPrefix>search</mat-icon>
+              <input matInput 
+                     placeholder="Search documents..." 
+                     [(ngModel)]="searchQuery"
+                     (keyup.enter)="onSearch()">
+              <button mat-icon-button matSuffix *ngIf="searchQuery" (click)="searchQuery = ''; loadDocuments()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+            <button mat-raised-button color="primary" (click)="onSearch()">
+              Search
+            </button>
+          </div>
+          
+          <div class="filter-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Sector</mat-label>
+              <mat-select [(ngModel)]="selectedSector" (selectionChange)="onFilterChange()">
+                <mat-option value="">All Sectors</mat-option>
+                @for (sector of sectors; track sector) {
+                  <mat-option [value]="sector">{{ sector }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Academic Year</mat-label>
+              <mat-select [(ngModel)]="selectedYear" (selectionChange)="onFilterChange()">
+                <mat-option value="">All Years</mat-option>
+                @for (year of academicYears; track year) {
+                  <mat-option [value]="year">{{ year }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            
+            <button mat-stroked-button (click)="clearFilters()" *ngIf="searchQuery || selectedSector || selectedYear">
+              <mat-icon>clear_all</mat-icon>
+              Clear Filters
+            </button>
+            
+            <div class="spacer"></div>
+            
+            <button mat-icon-button (click)="toggleViewMode()" [matTooltip]="viewMode === 'grid' ? 'List view' : 'Grid view'">
+              <mat-icon>{{ viewMode === 'grid' ? 'view_list' : 'view_module' }}</mat-icon>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Documents Grid/List -->
+        @if (isLoading) {
+          <div class="loading-state">
+            <mat-spinner diameter="48"></mat-spinner>
+            <p>Loading documents...</p>
+          </div>
+        } @else if (documents.length === 0) {
+          <div class="empty-state">
+            <mat-icon>folder_open</mat-icon>
+            <h3>No documents found</h3>
+            <p>Try adjusting your search or filters</p>
+            <button mat-stroked-button (click)="clearFilters()">Clear Filters</button>
+          </div>
+        } @else {
+          <div class="documents-container" [class.list-view]="viewMode === 'list'">
+            @for (doc of documents; track trackByDocument($index, doc)) {
+              <mat-card class="document-card" (click)="viewDocument(doc)">
+                <!-- Featured Badge -->
+                @if (doc.featured) {
+                  <div class="featured-badge">
+                    <mat-icon>star</mat-icon>
+                    Featured
+                  </div>
+                }
+                
+                <!-- Document Icon -->
+                <div class="document-icon">
+                  <mat-icon>{{ getFileIcon(doc.fileType) }}</mat-icon>
+                </div>
+                
+                <!-- Document Info -->
+                <div class="document-info">
+                  <h3 class="document-title">{{ doc.title }}</h3>
+                  <p class="document-author">
+                    <mat-icon>person</mat-icon>
+                    {{ doc.authorName }}
+                  </p>
+                  
+                  <div class="document-meta">
+                    <span class="sector-chip">{{ doc.sector }}</span>
+                    <span class="year-chip">{{ doc.academicYear }}</span>
+                  </div>
+                  
+                  @if (doc.description) {
+                    <p class="document-description">
+                      {{ doc.description | slice:0:100 }}{{ doc.description.length > 100 ? '...' : '' }}
+                    </p>
+                  }
+                  
+                  <!-- Keywords -->
+                  @if (doc.keywords && doc.keywords.length > 0) {
+                    <div class="keywords">
+                      @for (keyword of doc.keywords.slice(0, 3); track keyword) {
+                        <span class="keyword">{{ keyword }}</span>
+                      }
+                      @if (doc.keywords.length > 3) {
+                        <span class="keyword more">+{{ doc.keywords.length - 3 }}</span>
+                      }
+                    </div>
+                  }
+                  
+                  <!-- Stats -->
+                  <div class="document-stats">
+                    <span>
+                      <mat-icon>visibility</mat-icon>
+                      {{ doc.viewCount }}
+                    </span>
+                    <span>
+                      <mat-icon>download</mat-icon>
+                      {{ doc.downloadCount }}
+                    </span>
+                    <span>
+                      <mat-icon>schedule</mat-icon>
+                      {{ getRelativeTime(doc.createdAt) }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="document-actions">
+                  <button mat-icon-button (click)="downloadDocument(doc); $event.stopPropagation()" matTooltip="Download">
+                    <mat-icon>download</mat-icon>
+                  </button>
+                  @if (isAdmin) {
+                    <button mat-icon-button [matMenuTriggerFor]="adminMenu" (click)="$event.stopPropagation()">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #adminMenu="matMenu">
+                      <button mat-menu-item (click)="toggleFeatured(doc, $event)">
+                        <mat-icon>{{ doc.featured ? 'star_border' : 'star' }}</mat-icon>
+                        <span>{{ doc.featured ? 'Unfeature' : 'Feature' }}</span>
+                      </button>
+                      <button mat-menu-item (click)="deleteDocument(doc, $event)">
+                        <mat-icon color="warn">delete</mat-icon>
+                        <span>Delete</span>
+                      </button>
+                    </mat-menu>
+                  }
+                </div>
+              </mat-card>
+            }
+          </div>
+          
+          <!-- Pagination -->
+          <mat-paginator
+            [length]="totalElements"
+            [pageSize]="pageSize"
+            [pageIndex]="pageIndex"
+            [pageSizeOptions]="[12, 24, 48]"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        }
+      </div>
+    </mat-tab>
+    
+    <!-- Featured Tab -->
+    <mat-tab label="Featured">
+      <div class="tab-content">
+        @if (featuredDocuments.length === 0) {
+          <div class="empty-state">
+            <mat-icon>star_border</mat-icon>
+            <h3>No featured documents</h3>
+            <p>Featured documents will appear here</p>
+          </div>
+        } @else {
+          <div class="documents-container featured-grid">
+            @for (doc of featuredDocuments; track trackByDocument($index, doc)) {
+              <mat-card class="document-card featured" (click)="viewDocument(doc)">
+                <div class="document-icon large">
+                  <mat-icon>{{ getFileIcon(doc.fileType) }}</mat-icon>
+                </div>
+                <div class="document-info">
+                  <h3 class="document-title">{{ doc.title }}</h3>
+                  <p class="document-author">
+                    <mat-icon>person</mat-icon>
+                    {{ doc.authorName }}
+                  </p>
+                  <div class="document-meta">
+                    <span class="sector-chip">{{ doc.sector }}</span>
+                    <span class="year-chip">{{ doc.academicYear }}</span>
+                  </div>
+                  @if (doc.description) {
+                    <p class="document-description">{{ doc.description }}</p>
+                  }
+                  <div class="document-stats">
+                    <span><mat-icon>visibility</mat-icon> {{ doc.viewCount }}</span>
+                    <span><mat-icon>download</mat-icon> {{ doc.downloadCount }}</span>
+                  </div>
+                </div>
+                <div class="document-actions">
+                  <button mat-raised-button color="primary" (click)="downloadDocument(doc); $event.stopPropagation()">
+                    <mat-icon>download</mat-icon>
+                    Download
+                  </button>
+                </div>
+              </mat-card>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+    
+    <!-- Recent Tab -->
+    <mat-tab label="Recent">
+      <div class="tab-content">
+        @if (recentDocuments.length === 0) {
+          <div class="empty-state">
+            <mat-icon>schedule</mat-icon>
+            <h3>No recent documents</h3>
+          </div>
+        } @else {
+          <div class="documents-list">
+            @for (doc of recentDocuments; track trackByDocument($index, doc)) {
+              <mat-card class="document-row" (click)="viewDocument(doc)">
+                <mat-icon class="file-icon">{{ getFileIcon(doc.fileType) }}</mat-icon>
+                <div class="row-info">
+                  <span class="title">{{ doc.title }}</span>
+                  <span class="meta">{{ doc.authorName }} • {{ doc.sector }} • {{ getRelativeTime(doc.createdAt) }}</span>
+                </div>
+                <button mat-icon-button (click)="downloadDocument(doc); $event.stopPropagation()">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </mat-card>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+    
+    <!-- Popular Tab -->
+    <mat-tab label="Most Downloaded">
+      <div class="tab-content">
+        @if (popularDocuments.length === 0) {
+          <div class="empty-state">
+            <mat-icon>trending_up</mat-icon>
+            <h3>No popular documents</h3>
+          </div>
+        } @else {
+          <div class="documents-list ranked">
+            @for (doc of popularDocuments; track trackByDocument($index, doc); let i = $index) {
+              <mat-card class="document-row" (click)="viewDocument(doc)">
+                <span class="rank" [class.top-3]="i < 3">{{ i + 1 }}</span>
+                <mat-icon class="file-icon">{{ getFileIcon(doc.fileType) }}</mat-icon>
+                <div class="row-info">
+                  <span class="title">{{ doc.title }}</span>
+                  <span class="meta">{{ doc.authorName }} • {{ doc.downloadCount }} downloads</span>
+                </div>
+                <button mat-icon-button (click)="downloadDocument(doc); $event.stopPropagation()">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </mat-card>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+  </div>
+</app-shared-layout>

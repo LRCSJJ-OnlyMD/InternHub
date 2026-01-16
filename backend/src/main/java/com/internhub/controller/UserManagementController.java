@@ -152,6 +152,92 @@ public class UserManagementController {
     }
 
     /**
+     * Get pending students (not yet approved)
+     */
+    @GetMapping("/students/pending")
+    public ResponseEntity<List<UserDTO>> getPendingStudents() {
+        List<User> students = userRepository.findAll().stream()
+                .filter(user -> user.getRole() == Role.STUDENT && !user.isAdminApproved())
+                .toList();
+
+        List<UserDTO> dtos = students.stream()
+                .map(this::mapToDTO)
+                .toList();
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    /**
+     * Approve a student account
+     */
+    @PostMapping("/students/{id}/approve")
+    public ResponseEntity<?> approveStudent(@PathVariable Long id) {
+        try {
+            User student = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+
+            if (student.getRole() != Role.STUDENT) {
+                return ResponseEntity.badRequest()
+                        .body(new MessageResponse("User is not a student"));
+            }
+
+            if (student.isAdminApproved()) {
+                return ResponseEntity.badRequest()
+                        .body(new MessageResponse("Student is already approved"));
+            }
+
+            student.setAdminApproved(true);
+            student.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(student);
+
+            // Send approval email
+            emailService.sendStudentApprovalEmail(
+                    student.getEmail(),
+                    student.getFirstName()
+            );
+
+            return ResponseEntity.ok(new MessageResponse("Student approved successfully"));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("Error approving student: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Reject a student account
+     */
+    @PostMapping("/students/{id}/reject")
+    public ResponseEntity<?> rejectStudent(@PathVariable Long id, @RequestBody(required = false) RejectStudentRequest request) {
+        try {
+            User student = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+
+            if (student.getRole() != Role.STUDENT) {
+                return ResponseEntity.badRequest()
+                        .body(new MessageResponse("User is not a student"));
+            }
+
+            // Send rejection email before deleting
+            String reason = request != null && request.getReason() != null ? request.getReason() : "Your application was not approved.";
+            emailService.sendStudentRejectionEmail(
+                    student.getEmail(),
+                    student.getFirstName(),
+                    reason
+            );
+
+            // Delete the student account
+            userRepository.delete(student);
+
+            return ResponseEntity.ok(new MessageResponse("Student rejected and account removed"));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("Error rejecting student: " + e.getMessage()));
+        }
+    }
+
+    /**
      * Update instructor sectors
      */
     @PutMapping("/instructors/{id}/sectors")
@@ -219,6 +305,7 @@ public class UserManagementController {
         dto.setLastName(user.getLastName());
         dto.setRole(user.getRole().name());
         dto.setEnabled(user.isEnabled());
+        dto.setAdminApproved(user.isAdminApproved());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setSectorIds(user.getSectors().stream().map(Sector::getId).toList());
         return dto;
@@ -275,6 +362,19 @@ public class UserManagementController {
         }
     }
 
+    public static class RejectStudentRequest {
+
+        private String reason;
+
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
+    }
+
     public static class UserDTO {
 
         private Long id;
@@ -283,6 +383,7 @@ public class UserManagementController {
         private String lastName;
         private String role;
         private boolean enabled;
+        private boolean adminApproved;
         private LocalDateTime createdAt;
         private List<Long> sectorIds;
 
@@ -333,6 +434,14 @@ public class UserManagementController {
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
+        }
+
+        public boolean isAdminApproved() {
+            return adminApproved;
+        }
+
+        public void setAdminApproved(boolean adminApproved) {
+            this.adminApproved = adminApproved;
         }
 
         public LocalDateTime getCreatedAt() {

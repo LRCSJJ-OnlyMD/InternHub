@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import '../models/comment.dart';
-import '../utils/constants.dart';
 import 'api_service.dart';
 
 class CommentService {

@@ -23,18 +23,22 @@ import 'screens/admin/advanced_search_screen.dart';
 import 'screens/shared/notifications_screen.dart';
 import 'screens/shared/notification_preferences_screen.dart';
 import 'screens/shared/profile_screen.dart';
-import 'screens/shared/settings_screen.dart';
+import 'screens/shared/settings_screen.dart' show themeProvider, SettingsScreen;
 import 'screens/shared/document_manager_screen.dart';
 import 'providers/auth_provider.dart';
 import 'models/internship.dart';
 import 'models/user.dart';
 import 'theme/app_theme.dart';
+import 'services/push_notification_service.dart';
 
-// Import theme provider from settings screen
-import 'screens/shared/settings_screen.dart' show themeProvider;
-
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize push notification service
+  final pushNotificationService = PushNotificationService();
+  await pushNotificationService.initialize();
+  await pushNotificationService.requestPermissions();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

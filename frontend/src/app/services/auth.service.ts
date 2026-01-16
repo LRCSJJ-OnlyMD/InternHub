@@ -26,6 +26,7 @@ export interface AuthResponse {
   twoFactorEnabled: boolean;
   message?: string;
   mustChangePassword?: boolean;
+  userId?: number;
 }
 
 export interface MessageResponse {

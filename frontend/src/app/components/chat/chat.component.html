@@ -1,0 +1,248 @@
+<app-shared-layout pageTitle="Messages" pageSubtitle="Chat with instructors and students">
+<div class="chat-wrapper">
+  <!-- Conversations List -->
+  <div class="conversations-panel">
+    <div class="panel-header">
+      <h2>Messages</h2>
+      <div class="connection-status" [class.connected]="isConnected">
+        <mat-icon>{{ isConnected ? 'wifi' : 'wifi_off' }}</mat-icon>
+      </div>
+    </div>
+    
+    <!-- Search -->
+    <div class="search-box">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput 
+               placeholder="Search conversations..." 
+               [(ngModel)]="searchQuery"
+               (keyup.enter)="searchConversations()">
+      </mat-form-field>
+    </div>
+    
+    <!-- Conversations List -->
+    <div class="conversations-list">
+      @if (isLoadingConversations) {
+        <div class="loading-spinner">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      } @else if (conversations.length === 0) {
+        <div class="empty-state">
+          <mat-icon>chat_bubble_outline</mat-icon>
+          <p>No conversations yet</p>
+          <span>Start a conversation from an internship page</span>
+        </div>
+      } @else {
+        @for (conv of conversations; track trackByConversation($index, conv)) {
+          <div class="conversation-item" 
+               [class.selected]="selectedConversation?.id === conv.id"
+               [class.unread]="conv.myUnreadCount && conv.myUnreadCount > 0"
+               (click)="selectConversation(conv)">
+            <div class="avatar">
+              {{ getOtherParticipantName(conv).charAt(0).toUpperCase() }}
+            </div>
+            <div class="conversation-info">
+              <div class="conversation-header">
+                <span class="participant-name">{{ getOtherParticipantName(conv) }}</span>
+                <span class="time">{{ getMessageTime(conv.lastMessageTime || conv.updatedAt) }}</span>
+              </div>
+              @if (isValidString(conv.internshipTitle)) {
+                <div class="conversation-preview">
+                  <span class="internship-badge">{{ truncateText(conv.internshipTitle, 20) }}</span>
+                </div>
+              }
+              @if (isValidString(conv.lastMessage)) {
+                <div class="last-message">
+                  {{ truncateText(conv.lastMessage, 40) }}
+                </div>
+              }
+            </div>
+            @if (conv.myUnreadCount && conv.myUnreadCount > 0) {
+              <div class="unread-badge">{{ conv.myUnreadCount }}</div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+  
+  <!-- Chat Area -->
+  <div class="chat-area">
+    @if (!selectedConversation) {
+      <div class="no-conversation-selected">
+        <mat-icon>forum</mat-icon>
+        <h3>Select a conversation</h3>
+        <p>Choose a conversation from the list to start chatting</p>
+      </div>
+    } @else {
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="chat-participant">
+          <div class="avatar">
+            {{ getOtherParticipantName(selectedConversation).charAt(0).toUpperCase() }}
+          </div>
+          <div class="participant-info">
+            <span class="name">{{ getOtherParticipantName(selectedConversation) }}</span>
+            <span class="internship">{{ selectedConversation.internshipTitle }}</span>
+          </div>
+        </div>
+        <div class="chat-actions">
+          <button mat-icon-button [matMenuTriggerFor]="chatMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #chatMenu="matMenu">
+            <button mat-menu-item>
+              <mat-icon>search</mat-icon>
+              <span>Search in conversation</span>
+            </button>
+            <button mat-menu-item>
+              <mat-icon>info</mat-icon>
+              <span>View internship details</span>
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+      
+      <!-- Messages -->
+      <div class="messages-container" #messagesContainer>
+        @if (isLoadingMessages) {
+          <div class="loading-spinner">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        } @else if (messages.length === 0) {
+          <div class="empty-messages">
+            <mat-icon>chat</mat-icon>
+            <p>No messages yet</p>
+            <span>Send a message to start the conversation</span>
+          </div>
+        } @else {
+          @for (message of messages; track trackByMessage($index, message)) {
+            <div class="message-wrapper" [class.own]="isOwnMessage(message)">
+              <div class="message" [class.deleted]="message.deleted">
+                <!-- Sender name for other person's messages -->
+                @if (!isOwnMessage(message) && message.senderName) {
+                  <div class="sender-name">{{ message.senderName }}</div>
+                }
+                
+                <!-- Reply reference -->
+                @if (isValidString(message.replyToContent)) {
+                  <div class="reply-reference">
+                    <mat-icon>reply</mat-icon>
+                    <span>{{ truncateText(message.replyToContent, 50) }}</span>
+                  </div>
+                }
+                
+                <!-- Message content -->
+                <div class="message-content">
+                  @if (message.deleted) {
+                    <span class="deleted-text">
+                      <mat-icon>block</mat-icon>
+                      This message was deleted
+                    </span>
+                  } @else {
+                    {{ message.content }}
+                    
+                    <!-- Attachment -->
+                    @if (message.attachmentUrl) {
+                      <div class="attachment">
+                        @if (message.type === 'IMAGE') {
+                          <img [src]="message.attachmentUrl" [alt]="message.attachmentName">
+                        } @else {
+                          <a [href]="message.attachmentUrl" target="_blank" class="file-link">
+                            <mat-icon>attach_file</mat-icon>
+                            {{ message.attachmentName }}
+                          </a>
+                        }
+                      </div>
+                    }
+                  }
+                </div>
+                
+                <!-- Message footer -->
+                <div class="message-footer">
+                  <span class="time" [matTooltip]="getFullDateTime(message.sentAt)">
+                    {{ getMessageTime(message.sentAt) }}
+                  </span>
+                  @if (isOwnMessage(message)) {
+                    <mat-icon class="status-icon" [class.read]="message.status === 'READ'">
+                      {{ getStatusIcon(message.status) }}
+                    </mat-icon>
+                  }
+                </div>
+                
+                <!-- Message actions (visible on hover) -->
+                @if (!message.deleted) {
+                  <div class="message-actions">
+                    <button mat-icon-button (click)="replyTo(message)" matTooltip="Reply">
+                      <mat-icon>reply</mat-icon>
+                    </button>
+                    @if (isOwnMessage(message)) {
+                      <button mat-icon-button (click)="deleteMessage(message)" matTooltip="Delete">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+        
+        <!-- Typing indicator -->
+        @if (typingUsers.size > 0) {
+          <div class="typing-indicator">
+            <div class="typing-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span>{{ getTypingText() }}</span>
+          </div>
+        }
+      </div>
+      
+      <!-- Reply preview -->
+      @if (replyingTo && isValidString(replyingTo.content)) {
+        <div class="reply-preview">
+          <div class="reply-content">
+            <mat-icon>reply</mat-icon>
+            <div class="reply-text">
+              <span class="reply-to">Replying to {{ replyingTo.senderName || 'User' }}</span>
+              <span class="reply-message">{{ truncateText(replyingTo.content, 100) }}</span>
+            </div>
+          </div>
+          <button mat-icon-button (click)="cancelReply()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+      
+      <!-- Input area -->
+      <div class="input-area">
+        <button mat-icon-button matTooltip="Attach file">
+          <mat-icon>attach_file</mat-icon>
+        </button>
+        
+        <div class="message-input-wrapper">
+          <input type="text"
+                 #messageInput
+                 class="message-input-field"
+                 placeholder="Type a message..."
+                 [(ngModel)]="newMessage"
+                 (input)="onInputChange()"
+                 (keydown)="onKeyPress($event)">
+        </div>
+        
+        <button mat-fab 
+                color="primary" 
+                (click)="sendMessage()"
+                [disabled]="!newMessage.trim() || isSending">
+          @if (isSending) {
+            <mat-spinner diameter="24" color="accent"></mat-spinner>
+          } @else {
+            <mat-icon>send</mat-icon>
+          }
+        </button>
+      </div>
+    }
+  </div>
+</div>
+</app-shared-layout>

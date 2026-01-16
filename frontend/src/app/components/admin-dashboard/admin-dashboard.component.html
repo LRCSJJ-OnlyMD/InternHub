@@ -7,30 +7,36 @@
     </div>
     <nav class="sidebar-nav">
       <a class="nav-item" [class.active]="activeSection === 'overview'" (click)="setActiveSection('overview')">
-        <span class="nav-label">Overview</span>
+        <span class="nav-label">📊 Overview</span>
       </a>
       <a class="nav-item" [class.active]="activeSection === 'internships'" (click)="setActiveSection('internships')">
-        <span class="nav-label">All Internships</span>
+        <span class="nav-label">💼 All Internships</span>
       </a>
       <a class="nav-item" [class.active]="activeSection === 'users'" (click)="setActiveSection('users')">
-        <span class="nav-label">User Management</span>
+        <span class="nav-label">
+          👥 User Management
+          <span class="badge-count pending-count" *ngIf="pendingStudents.length > 0">{{ pendingStudents.length }}</span>
+        </span>
       </a>
       <a class="nav-item" [class.active]="activeSection === 'sectors'" (click)="setActiveSection('sectors')">
-        <span class="nav-label">Sectors</span>
+        <span class="nav-label">🏢 Sectors</span>
       </a>
       <a class="nav-item" [class.active]="activeSection === 'activity-logs'" (click)="navigateToActivityLogs()">
-        <span class="nav-label">Activity Logs</span>
+        <span class="nav-label">📋 Activity Logs</span>
       </a>
       <a class="nav-item" [class.active]="activeSection === 'reports'" (click)="setActiveSection('reports')">
-        <span class="nav-label">Reports</span>
+        <span class="nav-label">📄 Reports</span>
+      </a>
+      <a class="nav-item" routerLink="/library">
+        <span class="nav-label">📚 Library</span>
       </a>
       <a class="nav-item" [class.active]="activeSection === 'settings'" (click)="setActiveSection('settings')">
-        <span class="nav-label">Settings</span>
+        <span class="nav-label">⚙️ Settings</span>
       </a>
     </nav>
     <div class="sidebar-footer">
       <button class="btn-logout" (click)="logout()">
-        <span class="nav-label">Logout</span>
+        <span class="nav-label">🚪 Logout</span>
       </button>
     </div>
   </aside>
@@ -355,6 +361,129 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Student Management Section -->
+        <div class="student-management-section">
+          <!-- Student Alert -->
+          <div *ngIf="studentAlertMessage" [class]="studentAlertType === 'success' ? 'alert alert-success' : 'alert alert-error'">
+            {{ studentAlertMessage }}
+          </div>
+
+          <!-- Pending Students -->
+          <div class="users-list pending-students-section" *ngIf="pendingStudents.length > 0">
+            <div class="list-header pending-header">
+              <h3>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Pending Student Approvals
+              </h3>
+              <span class="count-badge-large pending-badge">{{ pendingStudents.length }}</span>
+            </div>
+            <div class="info-banner warning-banner">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <h4>Action Required</h4>
+                <p>These students have registered and verified their email, but need your approval to access the system.</p>
+              </div>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let student of pendingStudents" class="pending-row">
+                    <td><span class="id-badge">{{ student.id }}</span></td>
+                    <td>
+                      <strong>{{ student.firstName }} {{ student.lastName }}</strong>
+                      <span class="role-badge student-badge">Student</span>
+                    </td>
+                    <td>{{ student.email }}</td>
+                    <td>{{ student.createdAt | date:'short' }}</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="btn-approve" (click)="approveStudent(student.id)">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Approve
+                        </button>
+                        <button class="btn-reject" (click)="rejectStudent(student.id)">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- All Students List -->
+          <div class="users-list">
+            <div class="list-header">
+              <h3>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                All Students
+              </h3>
+              <span class="count-badge-large">{{ students.length }}</span>
+            </div>
+            <div *ngIf="isLoadingStudents" class="loading-state">
+              <p>Loading students...</p>
+            </div>
+            <div *ngIf="!isLoadingStudents && students.length === 0" class="empty-state-modern">
+              <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <p>No students registered yet.</p>
+            </div>
+            <div class="table-container" *ngIf="!isLoadingStudents && students.length > 0">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let student of students" [class.unapproved-row]="!student.adminApproved">
+                    <td><span class="id-badge">{{ student.id }}</span></td>
+                    <td>
+                      <strong>{{ student.firstName }} {{ student.lastName }}</strong>
+                      <span class="role-badge student-badge">Student</span>
+                    </td>
+                    <td>{{ student.email }}</td>
+                    <td>
+                      <span class="status-badge" [class.status-approved]="student.adminApproved" [class.status-pending]="!student.adminApproved">
+                        {{ student.adminApproved ? 'Approved' : 'Pending Approval' }}
+                      </span>
+                    </td>
+                    <td>{{ student.createdAt | date:'short' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
