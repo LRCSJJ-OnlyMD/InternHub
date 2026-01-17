@@ -1,5 +1,7 @@
 package com.internhub.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -7,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
+
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender mailSender;
     private final String fromEmail;
@@ -21,6 +25,20 @@ public class EmailService {
         this.frontendUrl = frontendUrl;
     }
 
+    /**
+     * Safe email sending wrapper - catches exceptions and logs them instead of
+     * failing
+     */
+    private void sendEmailSafe(SimpleMailMessage message) {
+        try {
+            mailSender.send(message);
+            log.info("Email sent successfully to: {}", message.getTo()[0]);
+        } catch (Exception e) {
+            log.warn("Failed to send email to {}: {}. Email functionality may not be configured.",
+                    message.getTo()[0], e.getMessage());
+        }
+    }
+
     public void sendVerificationEmail(String toEmail, String token) {
         String verificationUrl = frontendUrl + "/verify-email?token=" + token;
 
@@ -32,7 +50,7 @@ public class EmailService {
                 + verificationUrl
                 + "\n\nThis link will expire in 24 hours.");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     public void sendPasswordResetEmail(String toEmail, String token) {
@@ -47,7 +65,7 @@ public class EmailService {
                 + "\n\nThis link will expire in 24 hours.\n\n"
                 + "If you didn't request this, please ignore this email.");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     public void sendTwoFactorEnabledEmail(String toEmail) {
@@ -58,7 +76,7 @@ public class EmailService {
         message.setText("Two-factor authentication has been successfully enabled on your account.\n\n"
                 + "You will now need to enter a verification code from your authenticator app when logging in.");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     public void send2FACodeEmail(String toEmail, int code) {
@@ -70,7 +88,7 @@ public class EmailService {
                 + "This code will expire in 5 minutes.\n\n"
                 + "If you didn't request this code, please secure your account immediately.");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     public void sendInstructorCredentials(String toEmail, String temporaryPassword, String firstName) {
@@ -88,7 +106,7 @@ public class EmailService {
                 + "Best regards,\n"
                 + "Internship Management System");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     // Instructor activation email
@@ -109,7 +127,7 @@ public class EmailService {
                 + "Best regards,\n"
                 + "InternHub Team");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     // Internship notification emails
@@ -127,7 +145,7 @@ public class EmailService {
                 + "Best regards,\n"
                 + "Internship Management System");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     public void sendInternshipValidatedEmail(String toEmail, String studentName, String internshipTitle, String instructorName) {
@@ -144,7 +162,7 @@ public class EmailService {
                 + "Best regards,\n"
                 + "Internship Management System");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     public void sendInternshipRefusedEmail(String toEmail, String studentName, String internshipTitle, String refusalComment) {
@@ -162,7 +180,7 @@ public class EmailService {
                 + "Best regards,\n"
                 + "Internship Management System");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     public void sendReportUploadedEmail(String toEmail, String instructorName, String studentName, String internshipTitle) {
@@ -179,7 +197,7 @@ public class EmailService {
                 + "Best regards,\n"
                 + "Internship Management System");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     public void sendInstructorReassignedEmail(String toEmail, String studentName, String internshipTitle, String newInstructorName) {
@@ -195,7 +213,7 @@ public class EmailService {
                 + "Best regards,\n"
                 + "Internship Management System");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     // Student approval email
@@ -211,7 +229,7 @@ public class EmailService {
                 + "Best regards,\n"
                 + "InternHub Team");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     // Student rejection email
@@ -227,7 +245,7 @@ public class EmailService {
                 + "Best regards,\n"
                 + "InternHub Team");
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 
     // Generic email sending method for custom messages
@@ -238,6 +256,6 @@ public class EmailService {
         message.setSubject(subject);
         message.setText(body);
 
-        mailSender.send(message);
+        sendEmailSafe(message);
     }
 }
